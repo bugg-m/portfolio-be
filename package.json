@@ -4,7 +4,7 @@
   "main": "root.server.ts",
   "scripts": {
     "build": "npx tsc",
-    "start": "npx tsc && node dist/root.server.js",
+    "start": "npx tsc && node build/root.server.js",
     "dev": "nodemon src/root.server.ts",
     "lint": "eslint src/**/*.ts",
     "format": "eslint src/**/*.ts --fix"
