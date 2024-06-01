@@ -114,7 +114,7 @@ const loginUser = asyncPromiseHandler(async (req: Request, res: Response) => {
     const jsonResponse = {
         statusCode: StatusCode.OK,
         message: Message.USER_LOGGED_IN,
-        data: [loggedInUser, accessToken, refreshToken],
+        data: { loggedInUser, accessToken, refreshToken },
         success: true
     };
 
@@ -173,7 +173,7 @@ const refreshAccessToken = asyncPromiseHandler(async (req: Request, res: Respons
     const jsonResponse = {
         statusCode: StatusCode.OK,
         message: Message.ACCESS_TOKEN_REFRESHED,
-        data: [accessToken, newRefreshToken],
+        data: { accessToken, newRefreshToken },
         success: true
     };
 
