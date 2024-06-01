@@ -1,5 +1,7 @@
 const Message = {
     ALL_FIELDS_REQUIRED: "All fields are required!",
+    ADMIN_SUMMARY_NOT_FOUND: "Admin summary not found!",
+    ADMIN_SUMMARY_FETCHED: "Admin summary fetched successfully",
     USERNAME_EMAIL_REQUIRED: "Invalid username or email",
     USER_ALREADY_EXISTS: "User already exists",
     USER_NOT_FOUND: "User not found",
