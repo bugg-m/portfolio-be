@@ -17,7 +17,7 @@ const registerUser = asyncPromiseHandler(async (req: Request, res: Response) => 
         const ErrorResponse = {
             statusCode: StatusCode.BAD_REQUEST,
             message: Message.ALL_FIELDS_REQUIRED,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -30,7 +30,7 @@ const registerUser = asyncPromiseHandler(async (req: Request, res: Response) => 
         const ErrorResponse = {
             statusCode: StatusCode.CONFLICT,
             message: Message.USER_ALREADY_EXISTS,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -47,7 +47,7 @@ const registerUser = asyncPromiseHandler(async (req: Request, res: Response) => 
         const ErrorResponse = {
             statusCode: StatusCode.INTERNAL_SERVER_ERROR,
             message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -56,7 +56,7 @@ const registerUser = asyncPromiseHandler(async (req: Request, res: Response) => 
         statusCode: StatusCode.OK,
         message: Message.USER_CREATED_SUCCESSFULLY,
         data: createdUser,
-        success: true
+        status: true
     };
 
     return res.status(StatusCode.CREATED).json(new ApiResponse(jsonResponse));
@@ -69,7 +69,7 @@ const loginUser = asyncPromiseHandler(async (req: Request, res: Response) => {
         const ErrorResponse = {
             statusCode: StatusCode.BAD_REQUEST,
             message: Message.USERNAME_EMAIL_REQUIRED,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -82,7 +82,7 @@ const loginUser = asyncPromiseHandler(async (req: Request, res: Response) => {
         const ErrorResponse = {
             statusCode: StatusCode.NOT_FOUND,
             message: Message.USER_NOT_FOUND,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -93,7 +93,7 @@ const loginUser = asyncPromiseHandler(async (req: Request, res: Response) => {
         const ErrorResponse = {
             statusCode: StatusCode.CONFLICT,
             message: Message.INVALID_PASSWORD,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -106,7 +106,7 @@ const loginUser = asyncPromiseHandler(async (req: Request, res: Response) => {
         const ErrorResponse = {
             statusCode: StatusCode.INTERNAL_SERVER_ERROR,
             message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -115,7 +115,7 @@ const loginUser = asyncPromiseHandler(async (req: Request, res: Response) => {
         statusCode: StatusCode.OK,
         message: Message.USER_LOGGED_IN,
         data: { loggedInUser, accessToken, refreshToken },
-        success: true
+        status: true
     };
 
     return res
@@ -132,7 +132,7 @@ const refreshAccessToken = asyncPromiseHandler(async (req: Request, res: Respons
         const ErrorResponse = {
             statusCode: StatusCode.UNAUTHORIZED,
             message: Message.UNAUTHORIZED_REQUEST,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -143,7 +143,7 @@ const refreshAccessToken = asyncPromiseHandler(async (req: Request, res: Respons
         const ErrorResponse = {
             statusCode: StatusCode.CONFLICT,
             message: Message.INVALID_TOKEN,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -154,7 +154,7 @@ const refreshAccessToken = asyncPromiseHandler(async (req: Request, res: Respons
         const ErrorResponse = {
             statusCode: StatusCode.NOT_FOUND,
             message: Message.USER_NOT_FOUND,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -163,7 +163,7 @@ const refreshAccessToken = asyncPromiseHandler(async (req: Request, res: Respons
         const ErrorResponse = {
             statusCode: StatusCode.BAD_REQUEST,
             message: Message.REFRESH_TOKEN_EXPIRED,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -174,7 +174,7 @@ const refreshAccessToken = asyncPromiseHandler(async (req: Request, res: Respons
         statusCode: StatusCode.OK,
         message: Message.ACCESS_TOKEN_REFRESHED,
         data: { accessToken, newRefreshToken },
-        success: true
+        status: true
     };
 
     return res
@@ -202,7 +202,7 @@ const logoutUser = asyncPromiseHandler(async (req: CustomRequest, res: Response)
     const jsonResponse = {
         statusCode: StatusCode.OK,
         message: Message.USER_LOGGED_OUT,
-        success: true
+        status: true
     };
 
     return res
@@ -220,7 +220,7 @@ const updateUserAvatar = asyncPromiseHandler(async (req: Request, res: Response)
         const ErrorResponse = {
             statusCode: StatusCode.INTERNAL_SERVER_ERROR,
             message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -229,7 +229,7 @@ const updateUserAvatar = asyncPromiseHandler(async (req: Request, res: Response)
         statusCode: StatusCode.OK,
         message: Message.USER_CREATED_SUCCESSFULLY,
         data: createdUser,
-        success: true
+        status: true
     };
 
     return res.status(StatusCode.CREATED).json(new ApiResponse(jsonResponse));

@@ -14,7 +14,7 @@ const getAdminSummary = asyncPromiseHandler(async (_: Request, res: Response) =>
         const ErrorResponse = {
             statusCode: StatusCode.NOT_FOUND,
             message: Message.ADMIN_SUMMARY_NOT_FOUND,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
@@ -22,8 +22,8 @@ const getAdminSummary = asyncPromiseHandler(async (_: Request, res: Response) =>
     const jsonResponse = {
         statusCode: StatusCode.OK,
         message: Message.ADMIN_SUMMARY_FETCHED,
-        data: { data, userSummary: USER_SUMMARY },
-        success: true
+        data: { name: data.name, bio: data.bio, userSummary: USER_SUMMARY },
+        status: true
     };
 
     return res.status(StatusCode.OK).json(new ApiResponse(jsonResponse));
