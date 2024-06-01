@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 
 // Define an interface for the user document
 export interface UserDocument extends Document {
+    _id: string;
     username: string;
     fullname: string;
     email: string;
