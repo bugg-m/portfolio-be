@@ -22,7 +22,7 @@ const verifyJWT = asyncPromiseHandler(async (req: CustomRequest, _: Response, ne
             const ErrorResponse = {
                 statusCode: StatusCode.UNAUTHORIZED,
                 message: Message.INVALID_TOKEN,
-                success: false
+                status: false
             };
             throw new ApiError(ErrorResponse);
         }
@@ -35,7 +35,7 @@ const verifyJWT = asyncPromiseHandler(async (req: CustomRequest, _: Response, ne
             const ErrorResponse = {
                 statusCode: StatusCode.UNAUTHORIZED,
                 message: Message.INVALID_TOKEN,
-                success: false
+                status: false
             };
             throw new ApiError(ErrorResponse);
         }
@@ -46,7 +46,7 @@ const verifyJWT = asyncPromiseHandler(async (req: CustomRequest, _: Response, ne
         const ErrorResponse = {
             statusCode: StatusCode.UNAUTHORIZED,
             message: Message.INVALID_TOKEN,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }

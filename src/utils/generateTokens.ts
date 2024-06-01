@@ -11,7 +11,7 @@ const generateAccessTokenRefreshToken = async (userId: string) => {
             const ErrorResponse = {
                 statusCode: StatusCode.CONFLICT,
                 message: Message.INVALID_PASSWORD,
-                success: false
+                status: false
             };
             throw new ApiError(ErrorResponse);
         }
@@ -25,7 +25,7 @@ const generateAccessTokenRefreshToken = async (userId: string) => {
         const ErrorResponse = {
             statusCode: StatusCode.BAD_REQUEST,
             message: Message.INVALID_TOKEN,
-            success: false
+            status: false
         };
         throw new ApiError(ErrorResponse);
     }
