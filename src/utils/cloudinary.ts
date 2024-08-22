@@ -53,12 +53,11 @@ const uploadFileOnCloudinary: CloudinaryUploadFunction = async (localFilePath) =
         return response;
     } catch (error) {
         fs.unlinkSync(localFilePath);
-        const ErrorResponse = {
+        throw new ApiError({
             statusCode: StatusCode.UNAUTHORIZED,
             message: Message.INVALID_TOKEN,
-            success: false
-        };
-        throw new ApiError(ErrorResponse);
+            status: false
+        });
     }
 };
 

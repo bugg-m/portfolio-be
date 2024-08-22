@@ -1,5 +1,5 @@
 import connectDatabase from "@db/dataBase";
-import { httpsServer } from "root.app";
+import { httpsServer } from "@src/root.app";
 
 const PORT = process.env.PORT || 4000;
 
@@ -7,7 +7,7 @@ connectDatabase()
     .then(() => {
         httpsServer.on("error", (error) => {
             console.log("HTTPS server error:", error);
-            process.exit(1); // Exit the process if an error occurs during HTTPS server startup
+            process.exit(1);
         });
 
         httpsServer.listen(PORT, () => {
