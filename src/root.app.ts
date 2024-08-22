@@ -13,9 +13,11 @@ dotenv.config({
     path: path.join(__dirname, "../.env")
 });
 
+const env: ProcessEnv = process.env as ProcessEnv;
+
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL1,
+        origin: env.FRONTEND_URL1,
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
@@ -30,7 +32,7 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 // SSL options
-const sslOptions = {
+const sslOptions: SSLOptions = {
     key: fs.readFileSync(path.join(__dirname, "../localhost+2-key.pem")),
     cert: fs.readFileSync(path.join(__dirname, "../localhost+2.pem"))
 };
@@ -39,7 +41,7 @@ const sslOptions = {
 const httpsServer = https.createServer(sslOptions, app);
 
 // Route imports
-import { ADMIN_API_ROUTE, USER_API_ROUTE } from "app.constants";
+import { ADMIN_API_ROUTE, USER_API_ROUTE } from "@src/app.constants";
 import { UserRouter } from "@routes/user-routes/user.routes";
 import { AdminRouter } from "@routes/admin-routes/admin.routes";
 
@@ -49,5 +51,12 @@ app.use(ADMIN_API_ROUTE, AdminRouter);
 // ============================== Mini React Apps Routes ===================
 // passkeys app
 app.use(USER_API_ROUTE, UserRouter);
+
+// Middleware imports
+import { ErrorHandler } from "@middlewares/error.handler.middleware";
+import { ProcessEnv, SSLOptions } from "./types/app.types";
+
+// middleware
+app.use(ErrorHandler);
 
 export { app, httpsServer };
