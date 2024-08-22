@@ -1,4 +1,6 @@
-const StatusCode = {
+import { NumberObjectTypes } from "@src/types/app.types";
+
+const StatusCode: NumberObjectTypes = {
     OK: 200,
     CREATED: 201,
     NO_CONTENT: 204,

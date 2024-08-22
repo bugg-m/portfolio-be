@@ -1,8 +1,9 @@
 import { Message } from "@constants/message-constants/message.constants";
 import { StatusCode } from "@constants/status-code-constants/statusCode.constants";
-import { User, UserDocument } from "@models/user-models/user.model";
+import { User } from "@models/user-models/user.model";
+import { UserDocument } from "@src/types/user.types";
 import { ApiError } from "@utils/apiError";
-import { asyncPromiseHandler } from "@utils/asyncHandlers";
+import { asyncTryCatchHandler } from "@utils/asyncHandlers";
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
@@ -14,7 +15,7 @@ export interface JwtPayloadWithId extends jwt.JwtPayload {
     _id?: string;
 }
 
-const verifyJWT = asyncPromiseHandler(async (req: CustomRequest, _: Response, next: NextFunction) => {
+const verifyJWT = asyncTryCatchHandler(async (req: CustomRequest, _: Response, next: NextFunction) => {
     try {
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
