@@ -19,7 +19,6 @@
     "license": "MIT",
     "private": true,
     "dependencies": {
-        "@simplewebauthn/server": "^10.0.0",
         "@types/express-session": "^1.18.0",
         "@types/uuid": "^9.0.8",
         "axios": "^1.6.8",
