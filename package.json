@@ -3,8 +3,7 @@
     "version": "1.0.0",
     "main": "src/root.server.ts",
     "scripts": {
-        "postinstall": "yarn install",
-        "build": "tsc",
+        "build": "yarn install && tsc",
         "start": "node build/root.server.js",
         "dev": "nodemon",
         "lint": "eslint src/**/*.ts",
