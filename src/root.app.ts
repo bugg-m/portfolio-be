@@ -33,8 +33,8 @@ app.use(cookieParser());
 
 // SSL options
 const sslOptions: SSLOptions = {
-    key: fs.readFileSync(path.join(__dirname, "../localhost+2-key.pem")),
-    cert: fs.readFileSync(path.join(__dirname, "../localhost+2.pem"))
+    key: fs.readFileSync(path.join(__dirname, "./ssl/localhost-key.pem")),
+    cert: fs.readFileSync(path.join(__dirname, "./ssl/localhost-cert.pem"))
 };
 
 // Create HTTPS server
