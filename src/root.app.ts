@@ -13,11 +13,9 @@ dotenv.config({
     path: path.join(__dirname, "../.env")
 });
 
-const env: ProcessEnv = process.env as ProcessEnv;
-
 app.use(
     cors({
-        origin: env.FRONTEND_URL1,
+        origin: process.env.FRONTEND_URL1,
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
@@ -31,6 +29,9 @@ app.use(urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
+// types imports
+import { SSLOptions } from "./types/app.types";
+
 // SSL options
 const sslOptions: SSLOptions = {
     key: fs.readFileSync(path.join(__dirname, "./ssl/localhost-key.pem")),
@@ -41,20 +42,19 @@ const sslOptions: SSLOptions = {
 const httpsServer = https.createServer(sslOptions, app);
 
 // Route imports
-import { ADMIN_API_ROUTE, USER_API_ROUTE } from "@src/app.constants";
+import { PORTFOLIO_API_ROUTE, USER_API_ROUTE } from "@src/app.constants";
 import { UserRouter } from "@routes/user-routes/user.routes";
-import { AdminRouter } from "@routes/admin-routes/admin.routes";
+import { PortfolioRouter } from "@src/routes/portfolio-routes/portfolio.routes";
 
-// ============================== Admin routes =============================
-app.use(ADMIN_API_ROUTE, AdminRouter);
+// ============================== Portfolio routes =============================
+app.use(PORTFOLIO_API_ROUTE, PortfolioRouter);
 
-// ============================== Mini React Apps Routes ===================
+// ============================== React Apps Routes ===================
 // passkeys app
 app.use(USER_API_ROUTE, UserRouter);
 
 // Middleware imports
 import { ErrorHandler } from "@middlewares/error.handler.middleware";
-import { ProcessEnv, SSLOptions } from "./types/app.types";
 
 // middleware
 app.use(ErrorHandler);

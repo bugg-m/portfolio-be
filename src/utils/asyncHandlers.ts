@@ -1,8 +1,5 @@
+import { getStatusCode } from "@src/helpers/statuscode.helper";
 import { Request, Response, NextFunction, RequestHandler } from "express";
-
-const asyncPromiseHandler = (requestHandler: RequestHandler) => (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
-};
 
 const asyncTryCatchHandler =
     (requestHandler: RequestHandler) => async (req: Request, res: Response, next: NextFunction) => {
@@ -10,8 +7,9 @@ const asyncTryCatchHandler =
             await requestHandler(req, res, next);
             next();
         } catch (error: any) {
-            res.status(error.code || 500).json({ error: error.message || "Internal Server Error!" });
+            const code = getStatusCode(error);
+            res.status(code || 500).json({ error: error.message || "Internal Server Error!" });
         }
     };
 
-export { asyncPromiseHandler, asyncTryCatchHandler };
+export { asyncTryCatchHandler };

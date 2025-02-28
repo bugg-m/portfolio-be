@@ -1,11 +1,9 @@
-import { StringObjectTypes } from "@src/types/app.types";
-
-const Message: StringObjectTypes = {
+const Message = {
     ALL_FIELDS_REQUIRED: "All fields are required!",
-    ADMIN_SUMMARY_NOT_FOUND: "Admin summary not found!",
-    ADMIN_REPOS_NOT_FOUND: "Admin github repos not found!",
-    ADMIN_SUMMARY_FETCHED: "Admin summary fetched successfully",
-    ADMIN_REPOS_FETCHED: "Admin repos fetched successfully",
+    SUMMARY_NOT_FOUND: "Github summary not found!",
+    REPOS_NOT_FOUND: "Github github repos not found!",
+    SUMMARY_FETCHED: "Github summary fetched successfully",
+    REPOS_FETCHED: "Github repos fetched successfully",
     USERNAME_EMAIL_REQUIRED: "Invalid username or email",
     USER_ALREADY_EXISTS: "User already exists",
     USERNAME_ALREADY_EXISTS: "Username already exists",
@@ -15,7 +13,6 @@ const Message: StringObjectTypes = {
     USER_LOGGED_IN: "User logged in",
     USER_CREATED_SUCCESSFULLY: "User created successfully",
     INVALID_PASSWORD: "Invalid password",
-    INVALID_ADMIN_SECRET: "Invalid admin secret",
     INVALID_TOKEN: "Invalid token",
     USER_LOGGED_OUT: "User logged out",
     UNAUTHORIZED_REQUEST: "User is not authorized",

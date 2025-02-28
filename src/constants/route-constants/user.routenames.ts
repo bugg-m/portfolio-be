@@ -1,6 +1,4 @@
-import { StringObjectTypes } from "@src/types/app.types";
-
-const UserRouteNames: StringObjectTypes = {
+const UserRouteNames = {
     REGISTER_USER: "/register",
     LOGIN_USER: "/login",
     LOGOUT_USER: "/logout",
