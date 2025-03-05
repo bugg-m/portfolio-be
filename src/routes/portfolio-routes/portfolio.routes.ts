@@ -6,5 +6,6 @@ const PortfolioRouter = Router();
 
 // ====================== portfolio routes ======================
 PortfolioRouter.route(PortfolioRoutes.GITHUB_PROJECTS).get(Portfolio.getGithubProjects);
+PortfolioRouter.route(PortfolioRoutes.SEND_MESSAGE).post(Portfolio.sendMessage);
 
 export { PortfolioRouter };

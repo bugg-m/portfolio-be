@@ -19,7 +19,8 @@ const Message = {
     REFRESH_TOKEN_EXPIRED: "Refresh token expired",
     ACCESS_TOKEN_REFRESHED: "Access token refreshed",
     SOMETHING_WENT_WRONG_REGISTERING_USER: "Something went wrong while registering the user",
-    SOMETHING_WENT_WRONG_REGISTERING_AVATAR: "Something went wrong while uploading avatar to"
+    SOMETHING_WENT_WRONG_REGISTERING_AVATAR: "Something went wrong while uploading avatar to",
+    MESSAGE_SEND: "Message send"
 };
 
 export { Message };

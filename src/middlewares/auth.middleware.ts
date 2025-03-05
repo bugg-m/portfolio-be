@@ -1,6 +1,7 @@
 import { Message } from "@constants/message-constants/message.constants";
 import { StatusCode } from "@constants/status-code-constants/statusCode.constants";
 import { User } from "@models/user-models/user.model";
+import { JwtPayloadWithId } from "@src/types/app.types";
 import { UserDocument } from "@src/types/user.types";
 import { ApiError } from "@utils/apiError";
 import { asyncTryCatchHandler } from "@utils/asyncHandlers";
@@ -9,10 +10,6 @@ import jwt from "jsonwebtoken";
 
 export interface CustomRequest extends Request {
     user?: UserDocument;
-}
-
-export interface JwtPayloadWithId extends jwt.JwtPayload {
-    _id?: string;
 }
 
 const verifyJWT = asyncTryCatchHandler(async (req: CustomRequest, _: Response, next: NextFunction) => {

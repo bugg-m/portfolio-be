@@ -9,119 +9,116 @@ import { generateAccessTokenRefreshToken } from "@utils/generateTokens";
 import * as Auth from "@middlewares/auth.middleware";
 import { options } from "@src/app.constants";
 import jwt from "jsonwebtoken";
-import * as UserRequestBody from "@src/types/user.types";
+import { UserRequestBodyTypes } from "@src/types/user.types";
+import { JwtPayloadWithId } from "@src/types/app.types";
 
-const registerUser = asyncTryCatchHandler(
-    async (req: Request<{}, {}, UserRequestBody.UserRequestBodyTypes>, res: Response) => {
-        const { username, fullname, email, password } = req?.body;
+const registerUser = asyncTryCatchHandler(async (req: Request<{}, {}, UserRequestBodyTypes>, res: Response) => {
+    const { username, fullname, email, password } = req?.body;
 
-        if ([username, fullname, email, password].some((value) => value?.trim() === "")) {
-            throw new ApiError({
-                statusCode: StatusCode.BAD_REQUEST,
-                message: Message.ALL_FIELDS_REQUIRED,
-                status: false
-            });
-        }
-
-        const isExistedUser = await User.findOne({
-            $or: [{ username }, { email }]
+    if ([username, fullname, email, password].some((value) => value?.trim() === "")) {
+        throw new ApiError({
+            statusCode: StatusCode.BAD_REQUEST,
+            message: Message.ALL_FIELDS_REQUIRED,
+            status: false
         });
+    }
 
-        if (isExistedUser) {
-            throw new ApiError({
-                statusCode: StatusCode.CONFLICT,
-                message: Message.USER_ALREADY_EXISTS,
-                status: false
-            });
-        }
+    const isExistedUser = await User.findOne({
+        $or: [{ username }, { email }]
+    });
 
-        const user = await User.create({
-            username,
-            fullname,
-            email,
-            password
+    if (isExistedUser) {
+        throw new ApiError({
+            statusCode: StatusCode.CONFLICT,
+            message: Message.USER_ALREADY_EXISTS,
+            status: false
         });
-        const createdUser = await User.findById(user._id).select("-password -refreshToken");
+    }
 
-        if (!createdUser) {
-            throw new ApiError({
-                statusCode: StatusCode.INTERNAL_SERVER_ERROR,
-                message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
-                status: false
-            });
-        }
+    const user = await User.create({
+        username,
+        fullname,
+        email,
+        password
+    });
+    const createdUser = await User.findById(user._id).select("-password -refreshToken");
 
-        return res.status(StatusCode.CREATED).json(
+    if (!createdUser) {
+        throw new ApiError({
+            statusCode: StatusCode.INTERNAL_SERVER_ERROR,
+            message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
+            status: false
+        });
+    }
+
+    return res.status(StatusCode.CREATED).json(
+        new ApiResponse({
+            statusCode: StatusCode.OK,
+            message: Message.USER_CREATED_SUCCESSFULLY,
+            data: createdUser,
+            status: true
+        })
+    );
+});
+
+const loginUser = asyncTryCatchHandler(async (req: Request<{}, {}, UserRequestBodyTypes>, res: Response) => {
+    const { username, email, password } = req?.body;
+
+    if (!username && !email) {
+        throw new ApiError({
+            statusCode: StatusCode.BAD_REQUEST,
+            message: Message.USERNAME_EMAIL_REQUIRED,
+            status: false
+        });
+    }
+
+    const user = await User.findOne({
+        $or: [{ username }, { email }]
+    });
+
+    if (!user) {
+        throw new ApiError({
+            statusCode: StatusCode.NOT_FOUND,
+            message: Message.USER_NOT_FOUND,
+            status: false
+        });
+    }
+
+    const isValidPassword = await user.isPasswordCorrect(password);
+
+    if (!isValidPassword) {
+        throw new ApiError({
+            statusCode: StatusCode.CONFLICT,
+            message: Message.INVALID_PASSWORD,
+            status: false
+        });
+    }
+
+    const { accessToken, refreshToken } = await generateAccessTokenRefreshToken(user._id);
+
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+    if (!loggedInUser) {
+        throw new ApiError({
+            statusCode: StatusCode.INTERNAL_SERVER_ERROR,
+            message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
+            status: false
+        });
+    }
+
+    return res
+        .status(StatusCode.OK)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
             new ApiResponse({
                 statusCode: StatusCode.OK,
-                message: Message.USER_CREATED_SUCCESSFULLY,
-                data: createdUser,
+                message: Message.USER_LOGGED_IN,
+                data: { loggedInUser, accessToken, refreshToken },
                 status: true
             })
         );
-    }
-);
-
-const loginUser = asyncTryCatchHandler(
-    async (req: Request<{}, {}, UserRequestBody.UserRequestBodyTypes>, res: Response) => {
-        const { username, email, password } = req?.body;
-
-        if (!username && !email) {
-            throw new ApiError({
-                statusCode: StatusCode.BAD_REQUEST,
-                message: Message.USERNAME_EMAIL_REQUIRED,
-                status: false
-            });
-        }
-
-        const user = await User.findOne({
-            $or: [{ username }, { email }]
-        });
-
-        if (!user) {
-            throw new ApiError({
-                statusCode: StatusCode.NOT_FOUND,
-                message: Message.USER_NOT_FOUND,
-                status: false
-            });
-        }
-
-        const isValidPassword = await user.isPasswordCorrect(password);
-
-        if (!isValidPassword) {
-            throw new ApiError({
-                statusCode: StatusCode.CONFLICT,
-                message: Message.INVALID_PASSWORD,
-                status: false
-            });
-        }
-
-        const { accessToken, refreshToken } = await generateAccessTokenRefreshToken(user._id);
-
-        const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
-
-        if (!loggedInUser) {
-            throw new ApiError({
-                statusCode: StatusCode.INTERNAL_SERVER_ERROR,
-                message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
-                status: false
-            });
-        }
-
-        return res
-            .status(StatusCode.OK)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", refreshToken, options)
-            .json(
-                new ApiResponse({
-                    statusCode: StatusCode.OK,
-                    message: Message.USER_LOGGED_IN,
-                    data: { loggedInUser, accessToken, refreshToken },
-                    status: true
-                })
-            );
-    }
-);
+});
 
 const refreshAccessToken = asyncTryCatchHandler(async (req: Request, res: Response) => {
     const token = req.cookies["accessToken"] || req.body.refreshToken;
@@ -134,7 +131,7 @@ const refreshAccessToken = asyncTryCatchHandler(async (req: Request, res: Respon
         });
     }
 
-    const decodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET ?? "") as Auth.JwtPayloadWithId;
+    const decodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET ?? "") as JwtPayloadWithId;
 
     if (!decodedToken) {
         throw new ApiError({

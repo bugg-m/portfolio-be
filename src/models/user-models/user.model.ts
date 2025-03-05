@@ -1,10 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import * as UserTypes from "@src/types/user.types";
+import { UserDocument, UserModel } from "@src/types/user.types";
 
 // Define the schema for the user
-const userSchema = new Schema<UserTypes.UserDocument, UserTypes.UserModel>(
+const userSchema = new Schema<UserDocument, UserModel>(
     {
         username: {
             type: String,
@@ -42,7 +42,7 @@ const userSchema = new Schema<UserTypes.UserDocument, UserTypes.UserModel>(
 );
 
 // Pre-save hook to hash the password before saving
-userSchema.pre<UserTypes.UserDocument>("save", async function (next) {
+userSchema.pre<UserDocument>("save", async function (next) {
     if (!this.isModified("password")) return next();
 
     this.password = await bcrypt.hash(this.password, 10);
@@ -83,4 +83,4 @@ userSchema.methods.generateRefreshToken = async function (): Promise<string> {
 };
 
 // Create and export the model
-export const User = mongoose.model<UserTypes.UserDocument, UserTypes.UserModel>("User", userSchema);
+export const User = mongoose.model<UserDocument, UserModel>("User", userSchema);
