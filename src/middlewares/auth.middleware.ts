@@ -17,12 +17,11 @@ const verifyJWT = asyncTryCatchHandler(async (req: CustomRequest, _: Response, n
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
         if (!token) {
-            const ErrorResponse = {
+            throw new ApiError({
                 statusCode: StatusCode.UNAUTHORIZED,
                 message: Message.INVALID_TOKEN,
                 status: false
-            };
-            throw new ApiError(ErrorResponse);
+            });
         }
 
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET ?? "") as JwtPayloadWithId;
@@ -30,23 +29,21 @@ const verifyJWT = asyncTryCatchHandler(async (req: CustomRequest, _: Response, n
         const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
 
         if (!user) {
-            const ErrorResponse = {
+            throw new ApiError({
                 statusCode: StatusCode.UNAUTHORIZED,
                 message: Message.INVALID_TOKEN,
                 status: false
-            };
-            throw new ApiError(ErrorResponse);
+            });
         }
 
         req.user = user;
         next();
     } catch (error) {
-        const ErrorResponse = {
+        throw new ApiError({
             statusCode: StatusCode.UNAUTHORIZED,
             message: Message.INVALID_TOKEN,
             status: false
-        };
-        throw new ApiError(ErrorResponse);
+        });
     }
 });
 

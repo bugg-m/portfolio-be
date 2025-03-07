@@ -7,75 +7,313 @@ import axios from "axios";
 import { Request, Response } from "express";
 import { SendMessage } from "@src/models/portfolio-models/send.message.models";
 import { SendMessageRequestBodyTypes } from "@src/types/portfolio-types/contact.types";
+import { Admin } from "@src/models/portfolio-models/admin.model";
+import { AdminRequestBodyTypes } from "@src/types/portfolio-types/admin.types";
+import { deleteFileOnCloudinary, uploadFileOnCloudinary } from "@src/utils/cloudinary";
+
+const registerAdmin = asyncTryCatchHandler(async (req: Request<{}, {}, AdminRequestBodyTypes>, res: Response) => {
+  const { username, fullname, email, password, secretToken } = req?.body;
+
+  if ([username, fullname, email, password, secretToken].some((value) => value?.trim() === "" || value === undefined)) {
+    throw new ApiError({
+      statusCode: StatusCode.BAD_REQUEST,
+      message: Message.ALL_FIELDS_REQUIRED,
+      status: false
+    });
+  }
+
+  const isExistedUser = await Admin.findOne({
+    $or: [{ username }, { email }]
+  });
+
+  if (isExistedUser) {
+    throw new ApiError({
+      statusCode: StatusCode.CONFLICT,
+      message: Message.USER_ALREADY_EXISTS,
+      status: false
+    });
+  }
+
+  const admin = await Admin.create({
+    username,
+    fullname,
+    email,
+    password,
+    secretToken
+  });
+  const createdAdmin = await Admin.findById(admin._id).select("-password -secretToken");
+
+  if (!createdAdmin) {
+    throw new ApiError({
+      statusCode: StatusCode.INTERNAL_SERVER_ERROR,
+      message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
+      status: false
+    });
+  }
+
+  return res.status(StatusCode.CREATED).json(
+    new ApiResponse({
+      statusCode: StatusCode.OK,
+      message: Message.USER_CREATED_SUCCESSFULLY,
+      data: createdAdmin,
+      status: true
+    })
+  );
+});
+
+const loginAdmin = asyncTryCatchHandler(async (req: Request<{}, {}, AdminRequestBodyTypes>, res: Response) => {
+  const { username, email, password } = req?.body;
+
+  if (!username && !email) {
+    throw new ApiError({
+      statusCode: StatusCode.BAD_REQUEST,
+      message: Message.USERNAME_EMAIL_REQUIRED,
+      status: false
+    });
+  }
+
+  const admin = await Admin.findOne({
+    $or: [{ username }, { email }]
+  });
+
+  if (!admin) {
+    throw new ApiError({
+      statusCode: StatusCode.NOT_FOUND,
+      message: Message.USER_NOT_FOUND,
+      status: false
+    });
+  }
+
+  const isValidPassword = await admin.isPasswordCorrect(password);
+
+  if (!isValidPassword) {
+    throw new ApiError({
+      statusCode: StatusCode.CONFLICT,
+      message: Message.INVALID_PASSWORD,
+      status: false
+    });
+  }
+
+  const loggedInAdmin = await Admin.findById(admin._id).select("-password -secretToken");
+
+  if (!loggedInAdmin) {
+    throw new ApiError({
+      statusCode: StatusCode.INTERNAL_SERVER_ERROR,
+      message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
+      status: false
+    });
+  }
+
+  return res.status(StatusCode.OK).json(
+    new ApiResponse({
+      statusCode: StatusCode.OK,
+      message: Message.USER_LOGGED_IN,
+      data: loggedInAdmin,
+      status: true
+    })
+  );
+});
+
+const updateAdminAvatar = asyncTryCatchHandler(async (req: Request, res: Response) => {
+  const admin = req.body.admin;
+  const createdAdmin = await Admin.findById(admin._id).select("-password -secretToken");
+
+  if (!createdAdmin) {
+    throw new ApiError({
+      statusCode: StatusCode.INTERNAL_SERVER_ERROR,
+      message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
+      status: false
+    });
+  }
+
+  return res.status(StatusCode.CREATED).json(
+    new ApiResponse({
+      statusCode: StatusCode.OK,
+      message: Message.USER_CREATED_SUCCESSFULLY,
+      data: createdAdmin,
+      status: true
+    })
+  );
+});
 
 const getGithubProjects = asyncTryCatchHandler(async (_: Request, res: Response) => {
-    const { status, data } = await axios.get(process.env.GITHUB_REPOS_URL ?? "", {
-        headers: {
-            Authorization: process.env.GITHUB_ACCESS_TOKEN,
-            "User-Agent": process.env.APP_NAME
-        }
-    });
-
-    if (status !== 200 && data === undefined) {
-        throw new ApiError({
-            statusCode: StatusCode.NOT_FOUND,
-            message: Message.REPOS_NOT_FOUND,
-            status: false
-        });
+  const { status, data } = await axios.get(process.env.GITHUB_REPOS_URL ?? "", {
+    headers: {
+      Authorization: process.env.GITHUB_ACCESS_TOKEN,
+      "Admin-Agent": process.env.APP_NAME
     }
+  });
 
-    return res.status(StatusCode.OK).json(
-        new ApiResponse({
-            statusCode: StatusCode.OK,
-            message: Message.REPOS_FETCHED,
-            data,
-            status: true
-        })
-    );
+  if (status !== 200 && data === undefined) {
+    throw new ApiError({
+      statusCode: StatusCode.NOT_FOUND,
+      message: Message.REPOS_NOT_FOUND,
+      status: false
+    });
+  }
+
+  return res.status(StatusCode.OK).json(
+    new ApiResponse({
+      statusCode: StatusCode.OK,
+      message: Message.REPOS_FETCHED,
+      data,
+      status: true
+    })
+  );
 });
 
 const sendMessage = asyncTryCatchHandler(async (req: Request<{}, {}, SendMessageRequestBodyTypes>, res: Response) => {
-    const { name, email, message } = req?.body;
+  const { name, email, message } = req?.body;
 
-    if ([name, email, message].some((value) => value?.trim() === "")) {
-        throw new ApiError({
-            statusCode: StatusCode.BAD_REQUEST,
-            message: Message.ALL_FIELDS_REQUIRED,
-            status: false
-        });
-    }
+  if ([name, email, message].some((value) => value?.trim() === "")) {
+    throw new ApiError({
+      statusCode: StatusCode.BAD_REQUEST,
+      message: Message.ALL_FIELDS_REQUIRED,
+      status: false
+    });
+  }
 
-    let contactRecords = await SendMessage.findOne({ email });
+  let sentMessages = await SendMessage.findOne({ email });
 
-    if (contactRecords) {
-        contactRecords.messages.push({
-            message,
-            time: new Date()
-        });
+  if (sentMessages) {
+    sentMessages.messages.push({
+      message,
+      time: new Date()
+    });
 
-        await contactRecords.save();
-    } else {
-        contactRecords = new SendMessage({
-            name,
-            email,
-            messages: [
-                {
-                    message,
-                    time: new Date()
-                }
-            ]
-        });
+    await sentMessages.save();
+  } else {
+    sentMessages = new SendMessage({
+      name,
+      email,
+      messages: [
+        {
+          message,
+          time: new Date()
+        }
+      ]
+    });
 
-        await contactRecords.save();
-    }
+    await sentMessages.save();
+  }
 
-    return res.status(StatusCode.OK).json(
-        new ApiResponse({
-            statusCode: StatusCode.OK,
-            message: Message.MESSAGE_SEND,
-            status: true
-        })
-    );
+  return res.status(StatusCode.OK).json(
+    new ApiResponse({
+      statusCode: StatusCode.OK,
+      message: Message.MESSAGE_SEND,
+      status: true
+    })
+  );
 });
 
-export { getGithubProjects, sendMessage };
+const uploadCV = asyncTryCatchHandler(async (req: Request, res: Response) => {
+  const cvLocalPath = req?.file?.path;
+  const { secretToken } = req?.body;
+
+  if (!cvLocalPath) {
+    throw new ApiError({
+      statusCode: StatusCode.BAD_REQUEST,
+      message: Message.CV_NOT_PROVIDED,
+      status: false
+    });
+  }
+  if (!secretToken) {
+    throw new ApiError({
+      statusCode: StatusCode.BAD_REQUEST,
+      message: Message.SECRET_TOKEN_NOT_PROVIDED,
+      status: false
+    });
+  }
+
+  const admin = await Admin.findOne();
+
+  if (!admin) {
+    throw new ApiError({
+      statusCode: StatusCode.NOT_FOUND,
+      message: Message.USER_NOT_FOUND,
+      status: false
+    });
+  }
+
+  const isValidSecretToken = await admin.isSecretTokenCorrect(secretToken);
+
+  if (!isValidSecretToken) {
+    throw new ApiError({
+      statusCode: StatusCode.FORBIDDEN,
+      message: Message.UNAUTHORIZED_REQUEST,
+      status: false
+    });
+  }
+
+  if (admin.myCV.public_id) {
+    await deleteFileOnCloudinary(admin.myCV.public_id);
+  }
+  const uploadCVOnCloudinary = await uploadFileOnCloudinary(cvLocalPath);
+
+  if (!uploadCVOnCloudinary) {
+    throw new ApiError({
+      statusCode: StatusCode.BAD_REQUEST,
+      message: Message.CV_NOT_UPLOADED,
+      status: false
+    });
+  }
+
+  admin.myCV = {
+    originalName: uploadCVOnCloudinary.original_filename,
+    url: uploadCVOnCloudinary.secure_url,
+    public_id: uploadCVOnCloudinary.public_id
+  };
+
+  await admin.save();
+
+  const updatedAdmin = await Admin.findOne().select("-password -secretToken");
+
+  if (!updatedAdmin?.myCV) {
+    throw new ApiError({
+      statusCode: StatusCode.FORBIDDEN,
+      message: Message.CV_NOT_UPLOADED,
+      status: false
+    });
+  }
+
+  return res.status(StatusCode.OK).json(
+    new ApiResponse({
+      statusCode: StatusCode.OK,
+      message: Message.CV_UPLOADED,
+      status: true
+    })
+  );
+});
+
+const downloadCV = asyncTryCatchHandler(async (_: Request, res: Response) => {
+  const admin = await Admin.findOne();
+
+  if (!admin) {
+    throw new ApiError({
+      statusCode: StatusCode.NOT_FOUND,
+      message: Message.USER_NOT_FOUND,
+      status: false
+    });
+  }
+  if (!admin.myCV.url) {
+    throw new ApiError({
+      statusCode: StatusCode.NOT_FOUND,
+      message: Message.CV_NOT_FOUND,
+      status: false
+    });
+  }
+
+  admin.cvDownloadCount += 1;
+  await admin.save();
+
+  return res.status(StatusCode.OK).json(
+    new ApiResponse({
+      statusCode: StatusCode.OK,
+      message: Message.CV_DOWNLOADED,
+      status: true,
+      data: { url: admin.myCV.url }
+    })
+  );
+});
+
+export { getGithubProjects, sendMessage, uploadCV, downloadCV, registerAdmin, loginAdmin, updateAdminAvatar };
