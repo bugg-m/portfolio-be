@@ -1,5 +1,5 @@
-import { Document, Model } from "mongoose";
-import { UserRequestBodyTypes } from "../user.types";
+import { Document, Model } from 'mongoose';
+import { UserRequestBodyTypes } from '../user.types';
 
 export interface CVRequestBodyTypes {
   fileName: string;

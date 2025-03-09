@@ -1,5 +1,6 @@
-import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
+import fs from 'fs';
+
+import { v2 as cloudinary } from 'cloudinary';
 
 interface CloudinaryConfig {
   cloud_name?: string;
@@ -24,17 +25,17 @@ type CloudinaryUploadFunction = (localFilePath: string) => Promise<CloudinaryUpl
 const cloudinaryConfig: CloudinaryConfig = {
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 };
 
 cloudinary.config(cloudinaryConfig);
 
-const uploadFileOnCloudinary: CloudinaryUploadFunction = async (localFilePath) => {
+const uploadFileOnCloudinary: CloudinaryUploadFunction = async localFilePath => {
   try {
     if (!localFilePath) return null;
     const response: CloudinaryUploadResponse = await cloudinary.uploader.upload(localFilePath, {
-      folder: "portfolio",
-      resource_type: "auto"
+      folder: 'portfolio',
+      resource_type: 'auto',
     });
     fs.unlinkSync(localFilePath);
     return response;
@@ -44,11 +45,11 @@ const uploadFileOnCloudinary: CloudinaryUploadFunction = async (localFilePath) =
   }
 };
 
-const deleteFileOnCloudinary: CloudinaryUploadFunction = async (publicId) => {
+const deleteFileOnCloudinary: CloudinaryUploadFunction = async publicId => {
   try {
     if (!publicId) return null;
     const response: CloudinaryUploadResponse = await cloudinary.uploader.destroy(publicId, {
-      resource_type: "image"
+      resource_type: 'image',
     });
     return response;
   } catch (error) {

@@ -1,6 +1,6 @@
-import { AdminDocument, AdminModel } from "@src/types/portfolio-types/admin.types";
-import mongoose from "mongoose";
-import bcrypt from "bcrypt";
+import { AdminDocument, AdminModel } from '@/types/portfolio-types/admin.types';
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
 const adminSchema = new mongoose.Schema<AdminDocument, AdminModel>(
   {
@@ -10,51 +10,51 @@ const adminSchema = new mongoose.Schema<AdminDocument, AdminModel>(
       unique: true,
       trim: true,
       lowercase: true,
-      index: true
+      index: true,
     },
     fullname: {
       type: String,
       required: true,
       trim: true,
-      lowercase: true
+      lowercase: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
       trim: true,
-      lowercase: true
+      lowercase: true,
     },
     password: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     secretToken: {
-      type: String
+      type: String,
     },
     myCV: {
       url: {
-        type: String
+        type: String,
       },
       public_id: {
-        type: String
+        type: String,
       },
-      originalName: { type: String }
+      originalName: { type: String },
     },
     cvDownloadCount: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
 // Pre-save hook to hash the password before saving
-adminSchema.pre<AdminDocument>("save", async function (next) {
-  if (!this.isModified("password secretToken")) return next();
+adminSchema.pre<AdminDocument>('save', async function (next) {
+  if (!this.isModified('password secretToken')) return next();
 
   this.password = await bcrypt.hash(this.password, 10);
   this.secretToken = await bcrypt.hash(this.secretToken, 10);
@@ -71,4 +71,4 @@ adminSchema.methods.isSecretTokenCorrect = async function (token: string): Promi
   return await bcrypt.compare(token, this.secretToken);
 };
 
-export const Admin = mongoose.model<AdminDocument, AdminModel>("Admin", adminSchema);
+export const Admin = mongoose.model<AdminDocument, AdminModel>('Admin', adminSchema);

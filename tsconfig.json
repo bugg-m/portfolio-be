@@ -6,20 +6,13 @@
     "lib": ["es2020"] /* Specify library files to be included in the compilation */,
     "outDir": "./dist" /* Redirect output structure to the directory */,
     "rootDir": "./src" /* Specify the root directory of input files */,
+    "declaration": true /* Generates corresponding '.d.ts' file */,
 
     /* Module Resolution Options */
     "moduleResolution": "node" /* Specify module resolution strategy */,
     "baseUrl": "." /* Base directory to resolve non-relative module names */,
     "paths": {
-      "@src/*": ["src/*"],
-      "@db/*": ["src/db/*"],
-      "@utils/*": ["src/utils/*"],
-      "@types/*": ["src/types/*"],
-      "@routes/*": ["src/routes/*"],
-      "@models/*": ["src/models/*"],
-      "@constants/*": ["src/constants/*"],
-      "@middlewares/*": ["src/middlewares/*"],
-      "@controllers/*": ["src/controllers/*"]
+      "@*": ["src/*"]
     },
     "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules */,
     "resolveJsonModule": true /* Include modules imported with .json extension */,

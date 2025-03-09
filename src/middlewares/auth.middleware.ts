@@ -1,50 +1,56 @@
-import { Message } from "@constants/message-constants/message.constants";
-import { StatusCode } from "@constants/status-code-constants/statusCode.constants";
-import { User } from "@models/user-models/user.model";
-import { JwtPayloadWithId } from "@src/types/app.types";
-import { UserDocument } from "@src/types/user.types";
-import { ApiError } from "@utils/apiError";
-import { asyncTryCatchHandler } from "@utils/asyncHandlers";
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+
+import { JwtPayloadWithId } from '@/types/app.types';
+import { UserDocument } from '@/types/user.types';
+import { Message } from '@constants/message-constants/message.constants';
+import { StatusCode } from '@constants/status-code-constants/statusCode.constants';
+import { User } from '@models/user-models/user.model';
+import { ApiError } from '@utils/apiError';
+import { asyncTryCatchHandler } from '@utils/asyncHandlers';
 
 export interface CustomRequest extends Request {
-    user?: UserDocument;
+  user?: UserDocument;
 }
 
-const verifyJWT = asyncTryCatchHandler(async (req: CustomRequest, _: Response, next: NextFunction) => {
+const verifyJWT = asyncTryCatchHandler(
+  async (req: CustomRequest, _: Response, next: NextFunction) => {
     try {
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+      const token = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '');
 
-        if (!token) {
-            throw new ApiError({
-                statusCode: StatusCode.UNAUTHORIZED,
-                message: Message.INVALID_TOKEN,
-                status: false
-            });
-        }
-
-        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET ?? "") as JwtPayloadWithId;
-
-        const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
-
-        if (!user) {
-            throw new ApiError({
-                statusCode: StatusCode.UNAUTHORIZED,
-                message: Message.INVALID_TOKEN,
-                status: false
-            });
-        }
-
-        req.user = user;
-        next();
-    } catch (error) {
+      if (!token) {
         throw new ApiError({
-            statusCode: StatusCode.UNAUTHORIZED,
-            message: Message.INVALID_TOKEN,
-            status: false
+          statusCode: StatusCode.UNAUTHORIZED,
+          message: Message.INVALID_TOKEN,
+          status: false,
         });
+      }
+
+      const decodedToken = jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET ?? ''
+      ) as JwtPayloadWithId;
+
+      const user = await User.findById(decodedToken?._id).select('-password -refreshToken');
+
+      if (!user) {
+        throw new ApiError({
+          statusCode: StatusCode.UNAUTHORIZED,
+          message: Message.INVALID_TOKEN,
+          status: false,
+        });
+      }
+
+      req.user = user;
+      next();
+    } catch (error) {
+      throw new ApiError({
+        statusCode: StatusCode.UNAUTHORIZED,
+        message: Message.INVALID_TOKEN,
+        status: false,
+      });
     }
-});
+  }
+);
 
 export { verifyJWT };
