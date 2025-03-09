@@ -1,16 +1,19 @@
+/* eslint-disable no-console */
+import './moduleAlias';
 import connectDatabase from '@db/dataBase';
-import { httpsServer } from '@root.app';
+
+import { app } from './root.app';
 
 const PORT = process.env.PORT || 4000;
 
 connectDatabase()
   .then(() => {
-    httpsServer.on('error', error => {
+    app.on('error', error => {
       console.log('HTTPS server error:', error);
       process.exit(1);
     });
 
-    httpsServer.listen(PORT, () => {
+    app.listen(PORT, () => {
       console.log(`Server is running at https://localhost:${PORT}`);
     });
   })
