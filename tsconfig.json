@@ -1,41 +1,53 @@
 {
-    "compilerOptions": {
-        "target": "ES5",
-        "lib": ["ES2015"],
-        "module": "Node16",
-        "rootDir": "./src",
-        "moduleResolution": "Node16",
-        "baseUrl": ".",
-        "paths": {
-            "@src/*": ["src/*"],
-            "@db/*": ["src/db/*"],
-            "@utils/*": ["src/utils/*"],
-            "@types/*": ["src/types/*"],
-            "@routes/*": ["src/routes/*"],
-            "@models/*": ["src/models/*"],
-            "@constants/*": ["src/constants/*"],
-            "@middlewares/*": ["src/middlewares/*"],
-            "@controllers/*": ["src/controllers/*"]
-        },
-        "allowImportingTsExtensions": true,
-        "resolvePackageJsonExports": true,
-        "resolvePackageJsonImports": true,
-        "sourceMap": true,
-        "outDir": "./src/build",
-        "noEmit": true,
-        "importsNotUsedAsValues": "remove",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "strictFunctionTypes": true,
-        "strictPropertyInitialization": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "noImplicitReturns": true,
-        "skipLibCheck": true
+  "compilerOptions": {
+    /* Basic Options */
+    "target": "es2020" /* Modern Node.js supports newer ECMAScript features */,
+    "module": "commonjs" /* Specify module code generation for Node.js */,
+    "lib": ["es2020"] /* Specify library files to be included in the compilation */,
+    "outDir": "./dist" /* Redirect output structure to the directory */,
+    "rootDir": "./src" /* Specify the root directory of input files */,
+
+    /* Module Resolution Options */
+    "moduleResolution": "node" /* Specify module resolution strategy */,
+    "baseUrl": "." /* Base directory to resolve non-relative module names */,
+    "paths": {
+      "@src/*": ["src/*"],
+      "@db/*": ["src/db/*"],
+      "@utils/*": ["src/utils/*"],
+      "@types/*": ["src/types/*"],
+      "@routes/*": ["src/routes/*"],
+      "@models/*": ["src/models/*"],
+      "@constants/*": ["src/constants/*"],
+      "@middlewares/*": ["src/middlewares/*"],
+      "@controllers/*": ["src/controllers/*"]
     },
-    "include": ["src/**/*.ts"],
-    "exclude": ["node_modules"]
+    "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules */,
+    "resolveJsonModule": true /* Include modules imported with .json extension */,
+
+    /* Source Map Options */
+    "sourceMap": true /* Generates corresponding .map file */,
+
+    /* Additional Checks */
+    "strict": true /* Enable all strict type-checking options */,
+    "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type */,
+    "strictNullChecks": true /* Enable strict null checks */,
+    "strictFunctionTypes": true /* Enable strict checking of function types */,
+    "strictBindCallApply": true /* Enable strict 'bind', 'call', and 'apply' methods on functions */,
+    "strictPropertyInitialization": true /* Ensure non-undefined class properties are initialized in the constructor */,
+    "noUnusedLocals": true /* Report errors on unused locals */,
+    "noUnusedParameters": true /* Report errors on unused parameters */,
+    "noImplicitReturns": true /* Report error when not all code paths in function return a value */,
+    "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement */,
+    "noUncheckedIndexedAccess": true /* Include 'undefined' in index signature results */,
+
+    /* Advanced Options */
+    "skipLibCheck": true /* Skip type checking of declaration files */,
+    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports */,
+
+    /* Experimental Options */
+    "experimentalDecorators": true /* Enables experimental support for ES decorators */,
+    "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators */
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }
