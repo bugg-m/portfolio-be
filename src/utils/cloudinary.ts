@@ -1,26 +1,14 @@
 import fs from 'fs';
 
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+
+import { ApiError } from './apiError';
 
 interface CloudinaryConfig {
   cloud_name?: string;
   api_key?: string;
   api_secret?: string;
 }
-
-interface CloudinaryUploadResponse {
-  public_id: string;
-  version: number;
-  format: string;
-  resource_type: string;
-  created_at: string;
-  bytes: number;
-  type: string;
-  secure_url: string;
-  original_filename: string;
-}
-
-type CloudinaryUploadFunction = (localFilePath: string) => Promise<CloudinaryUploadResponse | null>;
 
 const cloudinaryConfig: CloudinaryConfig = {
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -30,28 +18,42 @@ const cloudinaryConfig: CloudinaryConfig = {
 
 cloudinary.config(cloudinaryConfig);
 
-const uploadFileOnCloudinary: CloudinaryUploadFunction = async localFilePath => {
+const uploadFileOnCloudinary = async (localFilePath: string): Promise<UploadApiResponse | null> => {
   try {
     if (!localFilePath) return null;
-    const response: CloudinaryUploadResponse = await cloudinary.uploader.upload(localFilePath, {
+
+    const response = await cloudinary.uploader.upload(localFilePath, {
       folder: 'portfolio',
       resource_type: 'auto',
     });
     fs.unlinkSync(localFilePath);
     return response;
-  } catch (error) {
+  } catch (error: unknown) {
     fs.unlinkSync(localFilePath);
-    return null;
+
+    let statusCode: number = 500;
+    let message = 'An unknown error occurred';
+
+    if (error && typeof error === 'object') {
+      const err = error as { http_code?: number; message?: string };
+      statusCode = err.http_code ?? 500;
+      message = err.message ?? message;
+    }
+    throw new ApiError({
+      statusCode,
+      message,
+      status: false,
+    });
   }
 };
 
-const deleteFileOnCloudinary: CloudinaryUploadFunction = async publicId => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const deleteFileOnCloudinary = async (publicId: string): Promise<any> => {
   try {
     if (!publicId) return null;
-    const response: CloudinaryUploadResponse = await cloudinary.uploader.destroy(publicId, {
+    await cloudinary.uploader.destroy(publicId, {
       resource_type: 'image',
     });
-    return response;
   } catch (error) {
     return null;
   }

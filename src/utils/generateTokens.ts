@@ -4,17 +4,18 @@ import { User } from '@models/user-models/user.model';
 
 import { ApiError } from './apiError';
 
-const generateAccessTokenRefreshToken = async (userId: string) => {
+const generateAccessTokenRefreshToken = async (
+  userId: string
+): Promise<{ accessToken: string; refreshToken: string }> => {
   try {
     const user = await User.findById(userId);
 
     if (!user) {
-      const ErrorResponse = {
+      throw new ApiError({
         statusCode: StatusCode.CONFLICT,
         message: Message.INVALID_PASSWORD,
         status: false,
-      };
-      throw new ApiError(ErrorResponse);
+      });
     }
     const accessToken = await user.generateAccessToken();
     const refreshToken = await user.generateRefreshToken();
@@ -23,12 +24,11 @@ const generateAccessTokenRefreshToken = async (userId: string) => {
 
     return { accessToken, refreshToken };
   } catch (error) {
-    const ErrorResponse = {
+    throw new ApiError({
       statusCode: StatusCode.BAD_REQUEST,
       message: Message.INVALID_TOKEN,
       status: false,
-    };
-    throw new ApiError(ErrorResponse);
+    });
   }
 };
 

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { verify } from 'jsonwebtoken';
 
 import { JwtPayloadWithId } from '@/types/app.types';
 import { UserDocument } from '@/types/user.types';
@@ -9,14 +9,15 @@ import { User } from '@models/user-models/user.model';
 import { ApiError } from '@utils/apiError';
 import { asyncTryCatchHandler } from '@utils/asyncHandlers';
 
-export interface CustomRequest extends Request {
+export interface UserRequest extends Request {
   user?: UserDocument;
 }
-
 const verifyJWT = asyncTryCatchHandler(
-  async (req: CustomRequest, _: Response, next: NextFunction) => {
+  async (req: UserRequest, _: Response, next: NextFunction) => {
     try {
-      const token = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '');
+      const token = String(
+        req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '')
+      );
 
       if (!token) {
         throw new ApiError({
@@ -26,10 +27,7 @@ const verifyJWT = asyncTryCatchHandler(
         });
       }
 
-      const decodedToken = jwt.verify(
-        token,
-        process.env.ACCESS_TOKEN_SECRET ?? ''
-      ) as JwtPayloadWithId;
+      const decodedToken = verify(token, process.env.ACCESS_TOKEN_SECRET ?? '') as JwtPayloadWithId;
 
       const user = await User.findById(decodedToken?._id).select('-password -refreshToken');
 

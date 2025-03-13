@@ -1,5 +1,6 @@
-import { SendMessageDocument, SendMessageModel } from '@/types/portfolio-types/contact.types';
 import mongoose from 'mongoose';
+
+import { SendMessageDocument, SendMessageModel } from '@/types/portfolio-types/contact.types';
 
 const sendMessageSchema = new mongoose.Schema<SendMessageDocument, SendMessageModel>(
   {

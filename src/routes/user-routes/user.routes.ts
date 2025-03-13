@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { upload } from '@middlewares/multer.middleware';
-import * as UserAuth from '@controllers/user-controllers/user.controllers';
+
 import { UserRouteNames } from '@constants/route-constants/user.routenames';
+import * as UserAuth from '@controllers/user-controllers/user.controllers';
 import { verifyJWT } from '@middlewares/auth.middleware';
+import { upload } from '@middlewares/multer.middleware';
 
 const UserRouter = Router();
 

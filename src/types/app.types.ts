@@ -1,10 +1,5 @@
-import jwt from 'jsonwebtoken';
+import { JwtPayload } from 'jsonwebtoken';
 
-export interface SSLOptions {
-  key: Buffer;
-  cert: Buffer;
-}
-
-export interface JwtPayloadWithId extends jwt.JwtPayload {
+export interface JwtPayloadWithId extends JwtPayload {
   _id?: string;
 }

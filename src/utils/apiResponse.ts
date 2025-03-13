@@ -1,6 +1,6 @@
 class ApiResponse {
   statusCode: number;
-  data: any;
+  data: unknown;
   status: boolean;
   message: string;
 
@@ -11,7 +11,7 @@ class ApiResponse {
   }: {
     statusCode: number;
     message: string;
-    data?: any;
+    data?: unknown;
     status: boolean;
   }) {
     this.statusCode = statusCode;

@@ -1,19 +1,21 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import axios from 'axios';
+import { Request, Response } from 'express';
+
+import { AdminRequestBodyTypes } from '@/types/portfolio-types/admin.types';
+import { SendMessageRequestBodyTypes } from '@/types/portfolio-types/contact.types';
 import { Message } from '@constants/message-constants/message.constants';
 import { StatusCode } from '@constants/status-code-constants/statusCode.constants';
+import { Admin } from '@models/portfolio-models/admin.model';
+import { SendMessage } from '@models/portfolio-models/send.message.models';
 import { ApiError } from '@utils/apiError';
 import { ApiResponse } from '@utils/apiResponse';
 import { asyncTryCatchHandler } from '@utils/asyncHandlers';
-import axios from 'axios';
-import { Request, Response } from 'express';
-import { SendMessage } from '@models/portfolio-models/send.message.models';
-import { SendMessageRequestBodyTypes } from '@/types/portfolio-types/contact.types';
-import { Admin } from '@models/portfolio-models/admin.model';
-import { AdminRequestBodyTypes } from '@/types/portfolio-types/admin.types';
 import { deleteFileOnCloudinary, uploadFileOnCloudinary } from '@utils/cloudinary';
 
 const registerAdmin = asyncTryCatchHandler(
-  async (req: Request<{}, {}, AdminRequestBodyTypes>, res: Response) => {
-    const { username, fullname, email, password, secretToken } = req?.body;
+  async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
+    const { username, fullname, email, password, secretToken } = req.body;
 
     if (
       [username, fullname, email, password, secretToken].some(
@@ -56,7 +58,7 @@ const registerAdmin = asyncTryCatchHandler(
       });
     }
 
-    return res.status(StatusCode.CREATED).json(
+    res.status(StatusCode.CREATED).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.USER_CREATED_SUCCESSFULLY,
@@ -68,8 +70,8 @@ const registerAdmin = asyncTryCatchHandler(
 );
 
 const loginAdmin = asyncTryCatchHandler(
-  async (req: Request<{}, {}, AdminRequestBodyTypes>, res: Response) => {
-    const { username, email, password } = req?.body;
+  async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
+    const { username, email, password } = req.body;
 
     if (!username && !email) {
       throw new ApiError({
@@ -111,7 +113,7 @@ const loginAdmin = asyncTryCatchHandler(
       });
     }
 
-    return res.status(StatusCode.OK).json(
+    res.status(StatusCode.OK).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.USER_LOGGED_IN,
@@ -123,8 +125,15 @@ const loginAdmin = asyncTryCatchHandler(
 );
 
 const updateAdminAvatar = asyncTryCatchHandler(async (req: Request, res: Response) => {
-  const admin = req.body.admin;
-  const createdAdmin = await Admin.findById(admin._id).select('-password -secretToken');
+  const avatarLocalPath = req.file?.path;
+  if (!avatarLocalPath) {
+    throw new ApiError({
+      statusCode: StatusCode.BAD_REQUEST,
+      message: Message.AVATAR_NOT_PROVIDED,
+      status: false,
+    });
+  }
+  const createdAdmin = await Admin.findOne().select('-password -secretToken');
 
   if (!createdAdmin) {
     throw new ApiError({
@@ -134,7 +143,7 @@ const updateAdminAvatar = asyncTryCatchHandler(async (req: Request, res: Respons
     });
   }
 
-  return res.status(StatusCode.CREATED).json(
+  res.status(StatusCode.CREATED).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.USER_CREATED_SUCCESSFULLY,
@@ -160,7 +169,7 @@ const getGithubProjects = asyncTryCatchHandler(async (_: Request, res: Response)
     });
   }
 
-  return res.status(StatusCode.OK).json(
+  res.status(StatusCode.OK).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.REPOS_FETCHED,
@@ -171,8 +180,8 @@ const getGithubProjects = asyncTryCatchHandler(async (_: Request, res: Response)
 });
 
 const sendMessage = asyncTryCatchHandler(
-  async (req: Request<{}, {}, SendMessageRequestBodyTypes>, res: Response) => {
-    const { name, email, message } = req?.body;
+  async (req: Request<object, object, SendMessageRequestBodyTypes>, res: Response) => {
+    const { name, email, message } = req.body;
 
     if ([name, email, message].some(value => value?.trim() === '')) {
       throw new ApiError({
@@ -206,7 +215,7 @@ const sendMessage = asyncTryCatchHandler(
       await sentMessages.save();
     }
 
-    return res.status(StatusCode.OK).json(
+    res.status(StatusCode.OK).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.MESSAGE_SEND,
@@ -216,84 +225,86 @@ const sendMessage = asyncTryCatchHandler(
   }
 );
 
-const uploadCV = asyncTryCatchHandler(async (req: Request, res: Response) => {
-  const cvLocalPath = req?.file?.path;
-  const { secretToken } = req?.body;
+const uploadCV = asyncTryCatchHandler(
+  async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
+    const cvLocalPath = req?.file?.path;
+    const { secretToken } = req.body;
 
-  if (!cvLocalPath) {
-    throw new ApiError({
-      statusCode: StatusCode.BAD_REQUEST,
-      message: Message.CV_NOT_PROVIDED,
-      status: false,
-    });
+    if (!cvLocalPath) {
+      throw new ApiError({
+        statusCode: StatusCode.BAD_REQUEST,
+        message: Message.CV_NOT_PROVIDED,
+        status: false,
+      });
+    }
+    if (!secretToken) {
+      throw new ApiError({
+        statusCode: StatusCode.BAD_REQUEST,
+        message: Message.SECRET_TOKEN_NOT_PROVIDED,
+        status: false,
+      });
+    }
+
+    const admin = await Admin.findOne();
+
+    if (!admin) {
+      throw new ApiError({
+        statusCode: StatusCode.NOT_FOUND,
+        message: Message.USER_NOT_FOUND,
+        status: false,
+      });
+    }
+
+    const isValidSecretToken = await admin.isSecretTokenCorrect(secretToken);
+
+    if (!isValidSecretToken) {
+      throw new ApiError({
+        statusCode: StatusCode.FORBIDDEN,
+        message: Message.UNAUTHORIZED_REQUEST,
+        status: false,
+      });
+    }
+
+    if (admin.myCV.public_id) {
+      await deleteFileOnCloudinary(admin.myCV.public_id);
+    }
+    const uploadCVOnCloudinary = await uploadFileOnCloudinary(cvLocalPath);
+
+    if (!uploadCVOnCloudinary) {
+      throw new ApiError({
+        statusCode: StatusCode.BAD_REQUEST,
+        message: Message.FAILED_TO_UPLOAD_CLOUDINARY,
+        status: false,
+      });
+    }
+
+    admin.myCV = {
+      originalName: uploadCVOnCloudinary.original_filename,
+      url: uploadCVOnCloudinary.secure_url,
+      public_id: uploadCVOnCloudinary.public_id,
+    };
+
+    await admin.save();
+
+    const updatedAdmin = await Admin.findOne().select('-password -secretToken');
+
+    if (!updatedAdmin?.myCV) {
+      throw new ApiError({
+        statusCode: StatusCode.FORBIDDEN,
+        message: Message.CV_NOT_UPLOADED,
+        status: false,
+      });
+    }
+
+    res.status(StatusCode.OK).json(
+      new ApiResponse({
+        statusCode: StatusCode.OK,
+        message: Message.CV_UPLOADED,
+        status: true,
+      })
+    );
   }
-  if (!secretToken) {
-    throw new ApiError({
-      statusCode: StatusCode.BAD_REQUEST,
-      message: Message.SECRET_TOKEN_NOT_PROVIDED,
-      status: false,
-    });
-  }
-
-  const admin = await Admin.findOne();
-
-  if (!admin) {
-    throw new ApiError({
-      statusCode: StatusCode.NOT_FOUND,
-      message: Message.USER_NOT_FOUND,
-      status: false,
-    });
-  }
-
-  const isValidSecretToken = await admin.isSecretTokenCorrect(secretToken);
-
-  if (!isValidSecretToken) {
-    throw new ApiError({
-      statusCode: StatusCode.FORBIDDEN,
-      message: Message.UNAUTHORIZED_REQUEST,
-      status: false,
-    });
-  }
-
-  if (admin.myCV.public_id) {
-    await deleteFileOnCloudinary(admin.myCV.public_id);
-  }
-  const uploadCVOnCloudinary = await uploadFileOnCloudinary(cvLocalPath);
-
-  if (!uploadCVOnCloudinary) {
-    throw new ApiError({
-      statusCode: StatusCode.BAD_REQUEST,
-      message: Message.CV_NOT_UPLOADED,
-      status: false,
-    });
-  }
-
-  admin.myCV = {
-    originalName: uploadCVOnCloudinary.original_filename,
-    url: uploadCVOnCloudinary.secure_url,
-    public_id: uploadCVOnCloudinary.public_id,
-  };
-
-  await admin.save();
-
-  const updatedAdmin = await Admin.findOne().select('-password -secretToken');
-
-  if (!updatedAdmin?.myCV) {
-    throw new ApiError({
-      statusCode: StatusCode.FORBIDDEN,
-      message: Message.CV_NOT_UPLOADED,
-      status: false,
-    });
-  }
-
-  return res.status(StatusCode.OK).json(
-    new ApiResponse({
-      statusCode: StatusCode.OK,
-      message: Message.CV_UPLOADED,
-      status: true,
-    })
-  );
-});
+);
 
 const downloadCV = asyncTryCatchHandler(async (_: Request, res: Response) => {
   const admin = await Admin.findOne();
@@ -316,7 +327,7 @@ const downloadCV = asyncTryCatchHandler(async (_: Request, res: Response) => {
   admin.cvDownloadCount += 1;
   await admin.save();
 
-  return res.status(StatusCode.OK).json(
+  res.status(StatusCode.OK).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.CV_DOWNLOADED,

@@ -1,7 +1,7 @@
 class ApiError extends Error {
   statusCode: number;
-  data: any;
-  errors: any[];
+  data: unknown;
+  errors: unknown;
   status: boolean;
 
   constructor({
@@ -15,8 +15,8 @@ class ApiError extends Error {
     statusCode: number;
     message: string;
     status: boolean;
-    data?: any;
-    errors?: any[];
+    data?: unknown;
+    errors?: unknown;
     stack?: string;
   }) {
     super(message);

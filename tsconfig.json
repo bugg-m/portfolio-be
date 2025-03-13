@@ -1,45 +1,45 @@
 {
   "compilerOptions": {
     /* Basic Options */
-    "target": "es2020" /* Modern Node.js supports newer ECMAScript features */,
-    "module": "commonjs" /* Specify module code generation for Node.js */,
-    "lib": ["es2020"] /* Specify library files to be included in the compilation */,
-    "outDir": "./dist" /* Redirect output structure to the directory */,
-    "rootDir": "./src" /* Specify the root directory of input files */,
-    "declaration": true /* Generates corresponding '.d.ts' file */,
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": ["es2020"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
 
     /* Module Resolution Options */
-    "moduleResolution": "node" /* Specify module resolution strategy */,
-    "baseUrl": "." /* Base directory to resolve non-relative module names */,
+    "moduleResolution": "node",
+    "baseUrl": ".",
     "paths": {
       "@*": ["src/*"]
     },
-    "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules */,
-    "resolveJsonModule": true /* Include modules imported with .json extension */,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
 
     /* Source Map Options */
-    "sourceMap": true /* Generates corresponding .map file */,
+    "sourceMap": true,
 
     /* Additional Checks */
-    "strict": true /* Enable all strict type-checking options */,
-    "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type */,
-    "strictNullChecks": true /* Enable strict null checks */,
-    "strictFunctionTypes": true /* Enable strict checking of function types */,
-    "strictBindCallApply": true /* Enable strict 'bind', 'call', and 'apply' methods on functions */,
-    "strictPropertyInitialization": true /* Ensure non-undefined class properties are initialized in the constructor */,
-    "noUnusedLocals": true /* Report errors on unused locals */,
-    "noUnusedParameters": true /* Report errors on unused parameters */,
-    "noImplicitReturns": true /* Report error when not all code paths in function return a value */,
-    "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement */,
-    "noUncheckedIndexedAccess": true /* Include 'undefined' in index signature results */,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
 
     /* Advanced Options */
-    "skipLibCheck": true /* Skip type checking of declaration files */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports */,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
 
     /* Experimental Options */
-    "experimentalDecorators": true /* Enables experimental support for ES decorators */,
-    "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
