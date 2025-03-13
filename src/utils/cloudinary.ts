@@ -2,7 +2,7 @@ import fs from 'fs';
 
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 
-import { ApiError } from './apiError';
+import { ApiError } from './api.error';
 
 interface CloudinaryConfig {
   cloud_name?: string;

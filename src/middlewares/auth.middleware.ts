@@ -6,8 +6,8 @@ import { UserDocument } from '@/types/user.types';
 import { Message } from '@constants/message-constants/message.constants';
 import { StatusCode } from '@constants/status-code-constants/statusCode.constants';
 import { User } from '@models/user-models/user.model';
-import { ApiError } from '@utils/apiError';
-import { asyncTryCatchHandler } from '@utils/asyncHandlers';
+import { ApiError } from '@utils/api.error';
+import { asyncTryCatchHandler } from '@utils/async.handler';
 
 export interface UserRequest extends Request {
   user?: UserDocument;
