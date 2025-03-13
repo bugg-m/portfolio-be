@@ -1,17 +1,29 @@
-import { Request, Response, NextFunction, RequestHandler } from "express";
+import { Request, Response, NextFunction } from 'express';
 
-const asyncPromiseHandler = (requestHandler: RequestHandler) => (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
-};
+import { getStatusCode } from '@helpers/statuscode.helper';
+
+type AsyncRequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) => Promise<void | Response<any>>;
 
 const asyncTryCatchHandler =
-    (requestHandler: RequestHandler) => async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            await requestHandler(req, res, next);
-            next();
-        } catch (error: any) {
-            res.status(error.code || 500).json({ error: error.message || "Internal Server Error!" });
+  (requestHandler: AsyncRequestHandler) =>
+  (req: Request, res: Response, next: NextFunction): void => {
+    void (async (): Promise<void> => {
+      try {
+        const result = await requestHandler(req, res, next);
+        if (!res.headersSent && result === undefined) {
+          next();
         }
-    };
+      } catch (error: unknown) {
+        const code = getStatusCode(error);
+        const errorMessage = error instanceof Error ? error.message : 'Internal Server Error!';
+        res.status(code || 500).json({ error: errorMessage });
+      }
+    })();
+  };
 
-export { asyncPromiseHandler, asyncTryCatchHandler };
+export { asyncTryCatchHandler };

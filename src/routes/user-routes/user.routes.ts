@@ -1,15 +1,19 @@
-import { Router } from "express";
-import { upload } from "@middlewares/multer.middleware";
-import * as UserAuth from "@controllers/user-controllers/user.controllers";
-import { UserRouteNames } from "@constants/route-constants/user.routenames";
-import { verifyJWT } from "@middlewares/auth.middleware";
+import { Router } from 'express';
+
+import { UserRouteNames } from '@constants/route-constants/user.routenames';
+import * as UserAuth from '@controllers/user-controllers/user.controllers';
+import { verifyJWT } from '@middlewares/auth.middleware';
+import { upload } from '@middlewares/multer.middleware';
 
 const UserRouter = Router();
 
 // ====================== user routes ======================
-UserRouter.route(UserRouteNames.REGISTER_USER).post(upload.single("avatar"), UserAuth.registerUser);
+UserRouter.route(UserRouteNames.REGISTER_USER).post(upload.single('avatar'), UserAuth.registerUser);
 UserRouter.route(UserRouteNames.LOGIN_USER).post(UserAuth.loginUser);
-UserRouter.route(UserRouteNames.UPDATE_USER_AVATAR).put(upload.single("avatar"), UserAuth.updateUserAvatar);
+UserRouter.route(UserRouteNames.UPDATE_USER_AVATAR).put(
+  upload.single('avatar'),
+  UserAuth.updateUserAvatar
+);
 
 // ====================== secure routes ======================
 UserRouter.route(UserRouteNames.LOGOUT_USER).post(verifyJWT, UserAuth.logoutUser);

@@ -1,27 +1,27 @@
-import { Model, Document } from "mongoose";
+import { Model, Document } from 'mongoose';
 
-export type UserRequestBodyTypes = {
-    username: string;
-    fullname?: string;
-    email: string;
-    password: string;
-};
+export interface UserRequestBodyTypes {
+  username: string;
+  fullname?: string;
+  email: string;
+  password: string;
+}
 
 export interface UserDocument extends Document {
-    _id: string;
-    username: string;
-    fullname: string;
-    email: string;
-    password: string;
-    refreshToken: string;
-    createdAt: Date;
-    updatedAt: Date;
+  _id: string;
+  username: string;
+  fullname: string;
+  email: string;
+  password: string;
+  refreshToken: string;
+  createdAt: Date;
+  updatedAt: Date;
 
-    isPasswordCorrect(password: string): Promise<boolean>;
+  isPasswordCorrect(password: string): Promise<boolean>;
 
-    generateAccessToken(): Promise<string>;
+  generateAccessToken(): Promise<string>;
 
-    generateRefreshToken(): Promise<string>;
+  generateRefreshToken(): Promise<string>;
 }
 
 export interface UserModel extends Model<UserDocument> {}

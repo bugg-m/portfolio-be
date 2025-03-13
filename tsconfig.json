@@ -1,41 +1,46 @@
 {
-    "compilerOptions": {
-        "target": "ES5",
-        "lib": ["ES2015"],
-        "module": "Node16",
-        "rootDir": "./src",
-        "moduleResolution": "Node16",
-        "baseUrl": ".",
-        "paths": {
-            "@src/*": ["src/*"],
-            "@db/*": ["src/db/*"],
-            "@utils/*": ["src/utils/*"],
-            "@types/*": ["src/types/*"],
-            "@routes/*": ["src/routes/*"],
-            "@models/*": ["src/models/*"],
-            "@constants/*": ["src/constants/*"],
-            "@middlewares/*": ["src/middlewares/*"],
-            "@controllers/*": ["src/controllers/*"]
-        },
-        "allowImportingTsExtensions": true,
-        "resolvePackageJsonExports": true,
-        "resolvePackageJsonImports": true,
-        "sourceMap": true,
-        "outDir": "./src/build",
-        "noEmit": true,
-        "importsNotUsedAsValues": "remove",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "strictFunctionTypes": true,
-        "strictPropertyInitialization": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "noImplicitReturns": true,
-        "skipLibCheck": true
+  "compilerOptions": {
+    /* Basic Options */
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": ["es2020"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+
+    /* Module Resolution Options */
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@*": ["src/*"]
     },
-    "include": ["src/**/*.ts"],
-    "exclude": ["node_modules"]
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    /* Source Map Options */
+    "sourceMap": true,
+
+    /* Additional Checks */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+
+    /* Advanced Options */
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Experimental Options */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }

@@ -1,64 +1,62 @@
-import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
-import { ApiError } from "./apiError";
-import { StatusCode } from "@constants/status-code-constants/statusCode.constants";
-import { Message } from "@constants/message-constants/message.constants";
+import fs from 'fs';
+
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+
+import { ApiError } from './apiError';
 
 interface CloudinaryConfig {
-    cloud_name?: string;
-    api_key?: string;
-    api_secret?: string;
+  cloud_name?: string;
+  api_key?: string;
+  api_secret?: string;
 }
 
-interface CloudinaryUploadResponse {
-    public_id: string;
-    version: number;
-    signature: string;
-    width: number;
-    height: number;
-    format: string;
-    resource_type: string;
-    created_at: string;
-    tags: string[];
-    bytes: number;
-    type: string;
-    etag: string;
-    placeholder: boolean;
-    url: string;
-    secure_url: string;
-    original_filename: string;
-}
-
-// Define the type for the Cloudinary upload function
-type CloudinaryUploadFunction = (localFilePath: string) => Promise<CloudinaryUploadResponse | null>;
-
-// Define the Cloudinary configuration options
 const cloudinaryConfig: CloudinaryConfig = {
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 };
 
-// Configure Cloudinary
 cloudinary.config(cloudinaryConfig);
 
-// Define the upload function with proper TypeScript types
-const uploadFileOnCloudinary: CloudinaryUploadFunction = async (localFilePath) => {
-    try {
-        if (!localFilePath) return null;
-        const response: CloudinaryUploadResponse = await cloudinary.uploader.upload(localFilePath, {
-            resource_type: "auto"
-        });
-        fs.unlinkSync(localFilePath);
-        return response;
-    } catch (error) {
-        fs.unlinkSync(localFilePath);
-        throw new ApiError({
-            statusCode: StatusCode.UNAUTHORIZED,
-            message: Message.INVALID_TOKEN,
-            status: false
-        });
+const uploadFileOnCloudinary = async (localFilePath: string): Promise<UploadApiResponse | null> => {
+  try {
+    if (!localFilePath) return null;
+
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      folder: 'portfolio',
+      resource_type: 'auto',
+    });
+    fs.unlinkSync(localFilePath);
+    return response;
+  } catch (error: unknown) {
+    fs.unlinkSync(localFilePath);
+
+    let statusCode: number = 500;
+    let message = 'An unknown error occurred';
+
+    if (error && typeof error === 'object') {
+      const err = error as { http_code?: number; message?: string };
+      statusCode = err.http_code ?? 500;
+      message = err.message ?? message;
     }
+    throw new ApiError({
+      statusCode,
+      message,
+      status: false,
+    });
+  }
 };
 
-export default uploadFileOnCloudinary;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const deleteFileOnCloudinary = async (publicId: string): Promise<any> => {
+  try {
+    if (!publicId) return null;
+    await cloudinary.uploader.destroy(publicId, {
+      resource_type: 'image',
+    });
+  } catch (error) {
+    return null;
+  }
+};
+
+export { uploadFileOnCloudinary, deleteFileOnCloudinary };
