@@ -8,10 +8,11 @@ import { Message } from '@constants/message-constants/message.constants';
 import { StatusCode } from '@constants/status-code-constants/statusCode.constants';
 import { Admin } from '@models/portfolio-models/admin.model';
 import { SendMessage } from '@models/portfolio-models/send.message.models';
-import { ApiError } from '@utils/apiError';
-import { ApiResponse } from '@utils/apiResponse';
-import { asyncTryCatchHandler } from '@utils/asyncHandlers';
+import { ApiError } from '@utils/api.error';
+import { ApiResponse } from '@utils/api.response';
+import { asyncTryCatchHandler } from '@utils/async.handler';
 import { deleteFileOnCloudinary, uploadFileOnCloudinary } from '@utils/cloudinary';
+import { sendWelcomeEmail } from '@utils/node-mailer';
 
 const registerAdmin = asyncTryCatchHandler(
   async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
@@ -214,6 +215,8 @@ const sendMessage = asyncTryCatchHandler(
 
       await sentMessages.save();
     }
+
+    await sendWelcomeEmail({ recipientEmail: email, recipientName: name });
 
     res.status(StatusCode.OK).json(
       new ApiResponse({

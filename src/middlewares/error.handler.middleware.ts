@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 import { StatusCode } from '@constants/status-code-constants/statusCode.constants';
-import { ApiError } from '@utils/apiError';
+import { ApiError } from '@utils/api.error';
 
 interface ErrorWithMessage {
   message?: string;

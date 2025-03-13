@@ -8,10 +8,10 @@ import * as Auth from '@/middlewares/auth.middleware';
 import { User } from '@/models/user-models/user.model';
 import { JwtPayloadWithId } from '@/types/app.types';
 import { UserDocument, UserRequestBodyTypes } from '@/types/user.types';
-import { ApiError } from '@/utils/apiError';
-import { ApiResponse } from '@/utils/apiResponse';
-import { asyncTryCatchHandler } from '@/utils/asyncHandlers';
-import { generateAccessTokenRefreshToken } from '@/utils/generateTokens';
+import { ApiError } from '@utils/api.error';
+import { ApiResponse } from '@utils/api.response';
+import { asyncTryCatchHandler } from '@utils/async.handler';
+import { generateAccessTokenRefreshToken } from '@utils/generate-tokens';
 
 const registerUser = asyncTryCatchHandler(
   async (req: Request<object, object, UserRequestBodyTypes>, res: Response) => {
