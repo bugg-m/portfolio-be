@@ -12,7 +12,7 @@ import { ApiError } from '@utils/api.error';
 import { ApiResponse } from '@utils/api.response';
 import { asyncTryCatchHandler } from '@utils/async.handler';
 import { deleteFileOnCloudinary, uploadFileOnCloudinary } from '@utils/cloudinary';
-import { sendWelcomeEmail } from '@utils/node-mailer';
+import { EmailService, EmailSubject, EmailTemplate } from '@utils/node-mailer';
 
 const registerAdmin = asyncTryCatchHandler(
   async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
@@ -183,6 +183,7 @@ const getGithubProjects = asyncTryCatchHandler(async (_: Request, res: Response)
 const sendMessage = asyncTryCatchHandler(
   async (req: Request<object, object, SendMessageRequestBodyTypes>, res: Response) => {
     const { name, email, message } = req.body;
+    const emailService = new EmailService();
 
     if ([name, email, message].some(value => value?.trim() === '')) {
       throw new ApiError({
@@ -216,7 +217,19 @@ const sendMessage = asyncTryCatchHandler(
       await sentMessages.save();
     }
 
-    await sendWelcomeEmail({ recipientEmail: email, recipientName: name });
+    await emailService.sendEmail({
+      recipientEmail: process.env.NODE_MAILER_EMAIL ?? 'echobuggm@gmail.com',
+      subject: EmailSubject.NEW_MESSAGE,
+      template: EmailTemplate.NEW_MESSAGE_FROM,
+      templateData: { recipientName: name, recipientEmail: email, recipientMessage: message },
+    });
+
+    await emailService.sendEmail({
+      recipientEmail: email,
+      subject: EmailSubject.REACHING_OUT,
+      template: EmailTemplate.WELCOME,
+      templateData: { recipientName: name },
+    });
 
     res.status(StatusCode.OK).json(
       new ApiResponse({
