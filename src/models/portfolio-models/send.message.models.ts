@@ -23,6 +23,7 @@ const sendMessageSchema = new mongoose.Schema<SendMessageDocument, SendMessageMo
         time: { type: Date, default: Date.now },
       },
     ],
+    createdAt: { type: Date, default: Date.now, index: { expires: '30d' } },
   },
   {
     timestamps: true,

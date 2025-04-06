@@ -10,14 +10,14 @@ import { JwtPayloadWithId } from '@/types/app.types';
 import { UserDocument, UserRequestBodyTypes } from '@/types/user.types';
 import { ApiError } from '@utils/api.error';
 import { ApiResponse } from '@utils/api.response';
-import { asyncTryCatchHandler } from '@utils/async.handler';
+import { asyncControllerHandler } from '@utils/async.handler';
 import { generateAccessTokenRefreshToken } from '@utils/generate-tokens';
 
-const registerUser = asyncTryCatchHandler(
+const registerUser = asyncControllerHandler(
   async (req: Request<object, object, UserRequestBodyTypes>, res: Response) => {
-    const { username, fullname, email, password } = req.body;
+    const { username, email, password } = req.body;
 
-    if ([username, fullname, email, password].some(value => value?.trim() === '')) {
+    if ([username, email, password].some(value => value?.trim() === '')) {
       throw new ApiError({
         statusCode: StatusCode.BAD_REQUEST,
         message: Message.ALL_FIELDS_REQUIRED,
@@ -39,7 +39,6 @@ const registerUser = asyncTryCatchHandler(
 
     const user = await User.create({
       username,
-      fullname,
       email,
       password,
     });
@@ -64,7 +63,7 @@ const registerUser = asyncTryCatchHandler(
   }
 );
 
-const loginUser = asyncTryCatchHandler(
+const loginUser = asyncControllerHandler(
   async (req: Request<object, object, UserRequestBodyTypes>, res: Response) => {
     const { username, email, password } = req.body;
 
@@ -118,14 +117,14 @@ const loginUser = asyncTryCatchHandler(
         new ApiResponse({
           statusCode: StatusCode.OK,
           message: Message.USER_LOGGED_IN,
-          data: { loggedInUser, accessToken, refreshToken },
+          data: loggedInUser,
           status: true,
         })
       );
   }
 );
 
-const refreshAccessToken = asyncTryCatchHandler(
+const refreshAccessToken = asyncControllerHandler(
   async (req: Request<object, object, UserDocument>, res: Response) => {
     const token = String(req.cookies['accessToken'] || req.body.refreshToken);
 
@@ -184,8 +183,16 @@ const refreshAccessToken = asyncTryCatchHandler(
   }
 );
 
-const logoutUser = asyncTryCatchHandler(async (req: Auth.UserRequest, res: Response) => {
+const logoutUser = asyncControllerHandler(async (req: Auth.UserRequest, res: Response) => {
   const userId = req?.user?._id;
+
+  if (!userId) {
+    throw new ApiError({
+      statusCode: StatusCode.UNAUTHORIZED,
+      message: Message.UNAUTHORIZED_REQUEST,
+      status: false,
+    });
+  }
 
   await User.findByIdAndUpdate(
     userId,
@@ -212,7 +219,7 @@ const logoutUser = asyncTryCatchHandler(async (req: Auth.UserRequest, res: Respo
     );
 });
 
-const updateUserAvatar = asyncTryCatchHandler(async (req: Auth.UserRequest, res: Response) => {
+const updateUserAvatar = asyncControllerHandler(async (req: Auth.UserRequest, res: Response) => {
   const userId = req?.user?._id;
 
   const user = await User.findById(userId).select('-password -refreshToken');

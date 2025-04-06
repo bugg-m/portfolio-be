@@ -10,11 +10,11 @@ import { Admin } from '@models/portfolio-models/admin.model';
 import { SendMessage } from '@models/portfolio-models/send.message.models';
 import { ApiError } from '@utils/api.error';
 import { ApiResponse } from '@utils/api.response';
-import { asyncTryCatchHandler } from '@utils/async.handler';
+import { asyncControllerHandler } from '@utils/async.handler';
 import { deleteFileOnCloudinary, uploadFileOnCloudinary } from '@utils/cloudinary';
 import { EmailService, EmailSubject, EmailTemplate } from '@utils/node-mailer';
 
-const registerAdmin = asyncTryCatchHandler(
+const registerAdmin = asyncControllerHandler(
   async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
     const { username, fullname, email, password, secretToken } = req.body;
 
@@ -59,7 +59,7 @@ const registerAdmin = asyncTryCatchHandler(
       });
     }
 
-    res.status(StatusCode.CREATED).json(
+    return res.status(StatusCode.CREATED).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.USER_CREATED_SUCCESSFULLY,
@@ -70,7 +70,7 @@ const registerAdmin = asyncTryCatchHandler(
   }
 );
 
-const loginAdmin = asyncTryCatchHandler(
+const loginAdmin = asyncControllerHandler(
   async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
     const { username, email, password } = req.body;
 
@@ -114,7 +114,7 @@ const loginAdmin = asyncTryCatchHandler(
       });
     }
 
-    res.status(StatusCode.OK).json(
+    return res.status(StatusCode.OK).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.USER_LOGGED_IN,
@@ -125,7 +125,7 @@ const loginAdmin = asyncTryCatchHandler(
   }
 );
 
-const updateAdminAvatar = asyncTryCatchHandler(async (req: Request, res: Response) => {
+const updateAdminAvatar = asyncControllerHandler(async (req: Request, res: Response) => {
   const avatarLocalPath = req.file?.path;
   if (!avatarLocalPath) {
     throw new ApiError({
@@ -144,7 +144,7 @@ const updateAdminAvatar = asyncTryCatchHandler(async (req: Request, res: Respons
     });
   }
 
-  res.status(StatusCode.CREATED).json(
+  return res.status(StatusCode.CREATED).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.USER_CREATED_SUCCESSFULLY,
@@ -154,7 +154,7 @@ const updateAdminAvatar = asyncTryCatchHandler(async (req: Request, res: Respons
   );
 });
 
-const getGithubProjects = asyncTryCatchHandler(async (_: Request, res: Response) => {
+const getGithubProjects = asyncControllerHandler(async (_: Request, res: Response) => {
   const { status, data } = await axios.get(process.env.GITHUB_REPOS_URL ?? '', {
     headers: {
       Authorization: process.env.GITHUB_ACCESS_TOKEN,
@@ -170,7 +170,7 @@ const getGithubProjects = asyncTryCatchHandler(async (_: Request, res: Response)
     });
   }
 
-  res.status(StatusCode.OK).json(
+  return res.status(StatusCode.OK).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.REPOS_FETCHED,
@@ -180,7 +180,7 @@ const getGithubProjects = asyncTryCatchHandler(async (_: Request, res: Response)
   );
 });
 
-const sendMessage = asyncTryCatchHandler(
+const sendMessage = asyncControllerHandler(
   async (req: Request<object, object, SendMessageRequestBodyTypes>, res: Response) => {
     const { name, email, message } = req.body;
     const emailService = new EmailService();
@@ -231,7 +231,7 @@ const sendMessage = asyncTryCatchHandler(
       templateData: { recipientName: name },
     });
 
-    res.status(StatusCode.OK).json(
+    return res.status(StatusCode.OK).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.MESSAGE_SEND,
@@ -241,7 +241,7 @@ const sendMessage = asyncTryCatchHandler(
   }
 );
 
-const uploadCV = asyncTryCatchHandler(
+const uploadCV = asyncControllerHandler(
   async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
     const cvLocalPath = req?.file?.path;
     const { secretToken } = req.body;
@@ -312,7 +312,7 @@ const uploadCV = asyncTryCatchHandler(
       });
     }
 
-    res.status(StatusCode.OK).json(
+    return res.status(StatusCode.OK).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.CV_UPLOADED,
@@ -322,7 +322,7 @@ const uploadCV = asyncTryCatchHandler(
   }
 );
 
-const downloadCV = asyncTryCatchHandler(async (_: Request, res: Response) => {
+const downloadCV = asyncControllerHandler(async (_: Request, res: Response) => {
   const admin = await Admin.findOne();
 
   if (!admin) {
@@ -343,7 +343,7 @@ const downloadCV = asyncTryCatchHandler(async (_: Request, res: Response) => {
   admin.cvDownloadCount += 1;
   await admin.save();
 
-  res.status(StatusCode.OK).json(
+  return res.status(StatusCode.OK).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.CV_DOWNLOADED,

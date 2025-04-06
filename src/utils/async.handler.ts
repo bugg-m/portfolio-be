@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { getStatusCode } from '@helpers/statuscode.helper';
-
 type AsyncRequestHandler = (
   req: Request,
   res: Response,
@@ -9,7 +7,7 @@ type AsyncRequestHandler = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ) => Promise<void | Response<any>>;
 
-const asyncTryCatchHandler =
+const asyncControllerHandler =
   (requestHandler: AsyncRequestHandler) =>
   (req: Request, res: Response, next: NextFunction): void => {
     void (async (): Promise<void> => {
@@ -19,11 +17,24 @@ const asyncTryCatchHandler =
           next();
         }
       } catch (error: unknown) {
-        const code = getStatusCode(error);
-        const errorMessage = error instanceof Error ? error.message : 'Internal Server Error!';
-        res.status(code || 500).json({ error: errorMessage });
+        next(error);
       }
     })();
   };
 
-export { asyncTryCatchHandler };
+const asyncMiddlewareHandler =
+  (middleware: AsyncRequestHandler) =>
+  (req: Request, res: Response, next: NextFunction): void => {
+    void (async (): Promise<void> => {
+      try {
+        const result = await middleware(req, res, next);
+        if (!res.headersSent && result === undefined) {
+          next();
+        }
+      } catch (error: unknown) {
+        return next(error);
+      }
+    })();
+  };
+
+export { asyncControllerHandler, asyncMiddlewareHandler };

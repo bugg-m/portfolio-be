@@ -16,6 +16,7 @@ export interface CVDocument {
 
 export interface AdminRequestBodyTypes extends UserRequestBodyTypes {
   secretToken: string;
+  fullname: string;
 }
 
 export interface AdminDocument extends Document {

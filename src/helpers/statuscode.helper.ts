@@ -10,6 +10,10 @@ interface ErrorWithStatusCode {
   statusCode: number;
 }
 
+interface ErrorWithMessage {
+  message: string | undefined;
+}
+
 const hasCode = (error: unknown): error is ErrorWithCode =>
   typeof error === 'object' && error !== null && 'code' in error;
 
@@ -19,6 +23,16 @@ const hasStatus = (error: unknown): error is ErrorWithStatus =>
 const hasStatusCode = (error: unknown): error is ErrorWithStatusCode =>
   typeof error === 'object' && error !== null && 'statusCode' in error;
 
+const isErrorWithMessage = (error: unknown): error is ErrorWithMessage => {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    (typeof (error as ErrorWithMessage).message === 'string' ||
+      (error as ErrorWithMessage).message === undefined)
+  );
+};
+
 const getStatusCode = (error: unknown): number => {
   if (hasCode(error) && typeof error.code === 'number') return error.code;
   if (hasStatus(error) && typeof error.status === 'number') return error.status;
@@ -27,4 +41,4 @@ const getStatusCode = (error: unknown): number => {
   return 500;
 };
 
-export { getStatusCode };
+export { getStatusCode, isErrorWithMessage };

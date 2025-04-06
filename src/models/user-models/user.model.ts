@@ -15,12 +15,6 @@ const userSchema = new Schema<UserDocument, UserModel>(
       lowercase: true,
       index: true,
     },
-    fullname: {
-      type: String,
-      required: true,
-      trim: true,
-      lowercase: true,
-    },
     email: {
       type: String,
       required: true,
@@ -36,6 +30,10 @@ const userSchema = new Schema<UserDocument, UserModel>(
       required: true,
       trim: true,
     },
+    passkeyCredentials: {
+      type: String,
+    },
+    createdAt: { type: Date, default: Date.now, index: { expires: '30d' } },
   },
   {
     timestamps: true,
