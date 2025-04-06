@@ -9,11 +9,17 @@ config({
 });
 import express, { Application, json, urlencoded, static as static_ } from 'express';
 
+// import crypto from 'crypto';
+
 import { ErrorHandler } from '@middlewares/error.handler.middleware';
 import { PortfolioRouter } from '@routes/portfolio-routes/portfolio.routes';
 import { UserRouter } from '@routes/user-routes/user.routes';
 
 import { PORTFOLIO_API_ROUTE, USER_API_ROUTE } from './app.constants';
+
+// if (!globalThis.crypto) {
+//   globalThis.crypto = crypto;
+// }
 
 const app: Application = express();
 

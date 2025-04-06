@@ -12,7 +12,7 @@ export interface UserDocument extends Document {
   email: string;
   password: string;
   refreshToken: string;
-  passkeyCredentials?: string;
+  passkeyCredentials: PasskeysDocument;
   createdAt: Date;
   updatedAt: Date;
 
@@ -21,6 +21,13 @@ export interface UserDocument extends Document {
   generateAccessToken(): Promise<string>;
 
   generateRefreshToken(): Promise<string>;
+}
+
+export interface PasskeysDocument {
+  passkeyChallenge: string;
+  publicKey: string;
+  counter: number;
+  createdAt: Date;
 }
 
 export interface UserModel extends Model<UserDocument> {}

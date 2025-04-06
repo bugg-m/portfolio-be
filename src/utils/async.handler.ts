@@ -27,10 +27,7 @@ const asyncMiddlewareHandler =
   (req: Request, res: Response, next: NextFunction): void => {
     void (async (): Promise<void> => {
       try {
-        const result = await middleware(req, res, next);
-        if (!res.headersSent && result === undefined) {
-          next();
-        }
+        await middleware(req, res, next);
       } catch (error: unknown) {
         return next(error);
       }

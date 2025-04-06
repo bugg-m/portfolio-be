@@ -19,10 +19,11 @@ const getPasskeyChallenge = asyncControllerHandler(async (req: Auth.UserRequest,
     });
   }
 
-  const passkeyChallenge = await generateRegistrationOptions({
+  const challengeResponse = await generateRegistrationOptions({
     rpID: process.env.PASSKEY_RP_ID ?? '',
     rpName: process.env.PASSKEY_RP_NAME ?? '',
     userName: user.username,
+    userDisplayName: user.username,
     timeout: 60000,
     attestationType: 'none',
     authenticatorSelection: {
@@ -32,7 +33,7 @@ const getPasskeyChallenge = asyncControllerHandler(async (req: Auth.UserRequest,
     },
   });
 
-  if (!passkeyChallenge) {
+  if (!challengeResponse) {
     throw new ApiError({
       statusCode: StatusCode.INTERNAL_SERVER_ERROR,
       message: Message.SOMETHING_WENT_WRONG_TRY_AGAIN,
@@ -40,14 +41,18 @@ const getPasskeyChallenge = asyncControllerHandler(async (req: Auth.UserRequest,
     });
   }
 
-  user.passkeyCredentials = passkeyChallenge.challenge;
+  user.passkeyCredentials = {
+    ...user.passkeyCredentials,
+    passkeyChallenge: challengeResponse.challenge,
+  };
+
   await user.save();
 
   res.status(StatusCode.OK).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.CHALLENGE_CREATED,
-      data: passkeyChallenge,
+      data: challengeResponse,
       status: true,
     })
   );
