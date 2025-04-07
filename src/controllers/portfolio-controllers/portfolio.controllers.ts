@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import axios from 'axios';
 import { Request, Response } from 'express';
 
+import { RequestWithBody } from '@/types/app.types';
 import { AdminRequestBodyTypes } from '@/types/portfolio-types/admin.types';
 import { SendMessageRequestBodyTypes } from '@/types/portfolio-types/contact.types';
 import { Message } from '@constants/message-constants/message.constants';
@@ -15,7 +15,7 @@ import { deleteFileOnCloudinary, uploadFileOnCloudinary } from '@utils/cloudinar
 import { EmailService, EmailSubject, EmailTemplate } from '@utils/node-mailer';
 
 const registerAdmin = asyncControllerHandler(
-  async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
+  async (req: RequestWithBody<AdminRequestBodyTypes>, res: Response) => {
     const { username, fullname, email, password, secretToken } = req.body;
 
     if (
@@ -71,7 +71,7 @@ const registerAdmin = asyncControllerHandler(
 );
 
 const loginAdmin = asyncControllerHandler(
-  async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
+  async (req: RequestWithBody<AdminRequestBodyTypes>, res: Response) => {
     const { username, email, password } = req.body;
 
     if (!username && !email) {
@@ -155,12 +155,15 @@ const updateAdminAvatar = asyncControllerHandler(async (req: Request, res: Respo
 });
 
 const getGithubProjects = asyncControllerHandler(async (_: Request, res: Response) => {
-  const { status, data } = await axios.get(process.env.GITHUB_REPOS_URL ?? '', {
-    headers: {
-      Authorization: process.env.GITHUB_ACCESS_TOKEN,
-      'Admin-Agent': process.env.APP_NAME,
-    },
-  });
+  const { status, data } = await axios.get<{ status: boolean; data: object }>(
+    process.env.GITHUB_REPOS_URL ?? '',
+    {
+      headers: {
+        Authorization: process.env.GITHUB_ACCESS_TOKEN,
+        'Admin-Agent': process.env.APP_NAME,
+      },
+    }
+  );
 
   if (status !== 200 && data === undefined) {
     throw new ApiError({
@@ -181,7 +184,7 @@ const getGithubProjects = asyncControllerHandler(async (_: Request, res: Respons
 });
 
 const sendMessage = asyncControllerHandler(
-  async (req: Request<object, object, SendMessageRequestBodyTypes>, res: Response) => {
+  async (req: RequestWithBody<SendMessageRequestBodyTypes>, res: Response) => {
     const { name, email, message } = req.body;
     const emailService = new EmailService();
 
@@ -242,7 +245,7 @@ const sendMessage = asyncControllerHandler(
 );
 
 const uploadCV = asyncControllerHandler(
-  async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
+  async (req: RequestWithBody<AdminRequestBodyTypes>, res: Response) => {
     const cvLocalPath = req?.file?.path;
     const { secretToken } = req.body;
 

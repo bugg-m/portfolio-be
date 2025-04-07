@@ -1,20 +1,19 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { verify } from 'jsonwebtoken';
 
 import { options } from '@/app.constants';
 import { Message } from '@/constants/message-constants/message.constants';
 import { StatusCode } from '@/constants/status-code-constants/statusCode.constants';
-import * as Auth from '@/middlewares/auth.middleware';
 import { User } from '@/models/user-models/user.model';
-import { JwtPayloadWithId } from '@/types/app.types';
-import { UserDocument, UserRequestBodyTypes } from '@/types/user.types';
+import { JwtPayloadWithId, RequestWithBody } from '@/types/app.types';
+import { UserRequestBodyTypes } from '@/types/user.types';
 import { ApiError } from '@utils/api.error';
 import { ApiResponse } from '@utils/api.response';
 import { asyncControllerHandler } from '@utils/async.handler';
 import { generateAccessTokenRefreshToken } from '@utils/generate-tokens';
 
 const registerUser = asyncControllerHandler(
-  async (req: Request<object, object, UserRequestBodyTypes>, res: Response) => {
+  async (req: RequestWithBody<UserRequestBodyTypes>, res: Response) => {
     const { username, email, password } = req.body;
 
     if ([username, email, password].some(value => value?.trim() === '')) {
@@ -64,10 +63,10 @@ const registerUser = asyncControllerHandler(
 );
 
 const loginUser = asyncControllerHandler(
-  async (req: Request<object, object, UserRequestBodyTypes>, res: Response) => {
-    const { username, email, password } = req.body;
+  async (req: RequestWithBody<UserRequestBodyTypes>, res: Response) => {
+    const { username, password } = req.body;
 
-    if (!username && !email) {
+    if (!username) {
       throw new ApiError({
         statusCode: StatusCode.BAD_REQUEST,
         message: Message.USERNAME_EMAIL_REQUIRED,
@@ -76,7 +75,7 @@ const loginUser = asyncControllerHandler(
     }
 
     const user = await User.findOne({
-      $or: [{ username }, { email }],
+      $or: [{ username }, { email: username }],
     });
 
     if (!user) {
@@ -99,7 +98,9 @@ const loginUser = asyncControllerHandler(
 
     const { accessToken, refreshToken } = await generateAccessTokenRefreshToken(user._id);
 
-    const loggedInUser = await User.findById(user._id).select('-password -refreshToken');
+    const loggedInUser = await User.findById(user._id).select(
+      '-password -refreshToken -passkeyCredentials'
+    );
 
     if (!loggedInUser) {
       throw new ApiError({
@@ -124,8 +125,12 @@ const loginUser = asyncControllerHandler(
   }
 );
 
+interface RefreshTokenBodyTypes {
+  refreshToken: string;
+}
+
 const refreshAccessToken = asyncControllerHandler(
-  async (req: Request<object, object, UserDocument>, res: Response) => {
+  async (req: RequestWithBody<RefreshTokenBodyTypes>, res: Response) => {
     const token = String(req.cookies['accessToken'] || req.body.refreshToken);
 
     if (!token) {
@@ -183,7 +188,7 @@ const refreshAccessToken = asyncControllerHandler(
   }
 );
 
-const logoutUser = asyncControllerHandler(async (req: Auth.UserRequest, res: Response) => {
+const logoutUser = asyncControllerHandler(async (req: RequestWithBody, res: Response) => {
   const userId = req?.user?._id;
 
   if (!userId) {
@@ -219,7 +224,7 @@ const logoutUser = asyncControllerHandler(async (req: Auth.UserRequest, res: Res
     );
 });
 
-const updateUserAvatar = asyncControllerHandler(async (req: Auth.UserRequest, res: Response) => {
+const updateUserAvatar = asyncControllerHandler(async (req: RequestWithBody, res: Response) => {
   const userId = req?.user?._id;
 
   const user = await User.findById(userId).select('-password -refreshToken');

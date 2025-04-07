@@ -4,7 +4,7 @@ import { PasskeysDocument } from '@/types/user.types';
 
 const PasskeysSchema = new mongoose.Schema<PasskeysDocument>(
   {
-    passkeyChallenge: {
+    challenge: {
       type: String,
     },
     publicKey: {

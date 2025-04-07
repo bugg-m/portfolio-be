@@ -24,8 +24,8 @@ export interface UserDocument extends Document {
 }
 
 export interface PasskeysDocument {
-  passkeyChallenge: string;
-  publicKey: string;
+  challenge: string;
+  publicKey: Uint8Array | string;
   counter: number;
   createdAt: Date;
 }
