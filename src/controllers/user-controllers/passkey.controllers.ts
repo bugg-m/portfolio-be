@@ -63,7 +63,7 @@ const getPasskeyChallenge = asyncControllerHandler(async (req: RequestWithBody, 
 });
 
 interface ChallengeBodyType {
-  challenge: RegistrationResponseJSON;
+  response: RegistrationResponseJSON;
 }
 
 const verifyPasskey = asyncControllerHandler(
@@ -82,7 +82,7 @@ const verifyPasskey = asyncControllerHandler(
       expectedChallenge: user.passkeyCredentials.challenge,
       expectedOrigin: process.env.PASSKEY_ORIGIN ?? '',
       expectedRPID: process.env.PASSKEY_RP_ID ?? '',
-      response: req.body.challenge,
+      response: req.body.response,
     });
 
     if (!verificationResponse.verified) {
