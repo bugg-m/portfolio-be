@@ -28,6 +28,7 @@ export interface PasskeysDocument {
   publicKey: Uint8Array | string;
   counter: number;
   createdAt: Date;
+  displayName: string;
 }
 
 export interface UserModel extends Model<UserDocument> {}

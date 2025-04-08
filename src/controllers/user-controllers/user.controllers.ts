@@ -41,7 +41,9 @@ const registerUser = asyncControllerHandler(
       email,
       password,
     });
-    const createdUser = await User.findById(user._id).select('-password -refreshToken');
+    const createdUser = await User.findById(user._id).select(
+      '-password -refreshToken -passkeyCredentials'
+    );
 
     if (!createdUser) {
       throw new ApiError({
@@ -227,7 +229,7 @@ const logoutUser = asyncControllerHandler(async (req: RequestWithBody, res: Resp
 const updateUserAvatar = asyncControllerHandler(async (req: RequestWithBody, res: Response) => {
   const userId = req?.user?._id;
 
-  const user = await User.findById(userId).select('-password -refreshToken');
+  const user = await User.findById(userId).select('-password -refreshToken -passkeyCredentials');
 
   if (!user) {
     const ErrorResponse = {
@@ -248,4 +250,39 @@ const updateUserAvatar = asyncControllerHandler(async (req: RequestWithBody, res
   return res.status(StatusCode.CREATED).json(new ApiResponse(jsonResponse));
 });
 
-export { registerUser, updateUserAvatar, loginUser, logoutUser, refreshAccessToken };
+// eslint-disable-next-line @typescript-eslint/require-await
+const getUserDetails = asyncControllerHandler(async (req: RequestWithBody, res: Response) => {
+  const user = req.user;
+
+  if (!user) {
+    throw new ApiError({
+      statusCode: StatusCode.NOT_FOUND,
+      message: Message.USER_NOT_FOUND,
+      status: false,
+    });
+  }
+
+  const {
+    username,
+    email,
+    passkeyCredentials: { displayName },
+  } = user;
+
+  return res.status(StatusCode.OK).json(
+    new ApiResponse({
+      statusCode: StatusCode.OK,
+      message: Message.NONE,
+      data: { username, email, displayName },
+      status: true,
+    })
+  );
+});
+
+export {
+  registerUser,
+  updateUserAvatar,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  getUserDetails,
+};

@@ -21,6 +21,9 @@ const Message = {
 
   MESSAGE_SEND: 'Message send',
 
+  NONE: '',
+  NOT_FOUND: 'Not found!',
+
   REFRESH_TOKEN_EXPIRED: 'Refresh token expired',
   REPOS_FETCHED: 'Github repos fetched successfully',
   REPOS_NOT_FOUND: 'Github github repos not found!',

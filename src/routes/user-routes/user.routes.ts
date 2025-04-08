@@ -23,6 +23,7 @@ UserRouter.route(UserRouteNames.UPDATE_USER_AVATAR).put(
 UserRouter.route(UserRouteNames.LOGOUT_USER).post(verifyJWT, UserAuth.logoutUser);
 UserRouter.route(UserRouteNames.GET_PASSKEY_CHALLENGE).get(verifyJWT, getPasskeyChallenge);
 UserRouter.route(UserRouteNames.VERIFY_USER).post(verifyJWT, verifyPasskey);
+UserRouter.route(UserRouteNames.GET_USER_DETAILS).get(verifyJWT, UserAuth.getUserDetails);
 UserRouter.route(UserRouteNames.REFRESH_ACCESS_TOKEN).post(UserAuth.refreshAccessToken);
 // ====================== secure routes ======================
 

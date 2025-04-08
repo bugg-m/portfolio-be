@@ -13,6 +13,9 @@ const PasskeysSchema = new mongoose.Schema<PasskeysDocument>(
     counter: {
       type: Number,
     },
+    displayName: {
+      type: String,
+    },
     createdAt: { type: Date, default: Date.now, index: { expires: '30d' } },
   },
   {

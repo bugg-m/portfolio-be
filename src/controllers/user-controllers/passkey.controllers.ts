@@ -48,6 +48,7 @@ const getPasskeyChallenge = asyncControllerHandler(async (req: RequestWithBody, 
   user.passkeyCredentials = {
     ...user.passkeyCredentials,
     challenge: challengeResponse.challenge,
+    displayName: challengeResponse.user.displayName,
   };
 
   await user.save();
@@ -96,6 +97,7 @@ const verifyPasskey = asyncControllerHandler(
     user.passkeyCredentials = {
       ...user.passkeyCredentials,
       publicKey: verificationResponse.registrationInfo?.credential.publicKey ?? '',
+      counter: verificationResponse.registrationInfo?.credential.counter ?? 0,
     };
 
     await user.save();

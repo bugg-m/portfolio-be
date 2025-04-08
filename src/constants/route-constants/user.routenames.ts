@@ -6,6 +6,7 @@ const UserRouteNames = {
   REFRESH_ACCESS_TOKEN: '/refresh_access_token',
   GET_PASSKEY_CHALLENGE: '/get_passkey_challenge',
   VERIFY_USER: '/verify_user',
+  GET_USER_DETAILS: '/get_user_details',
 };
 
 export { UserRouteNames };
