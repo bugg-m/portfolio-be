@@ -1,23 +1,22 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { verify } from 'jsonwebtoken';
 
 import { options } from '@/app.constants';
 import { Message } from '@/constants/message-constants/message.constants';
 import { StatusCode } from '@/constants/status-code-constants/statusCode.constants';
-import * as Auth from '@/middlewares/auth.middleware';
 import { User } from '@/models/user-models/user.model';
-import { JwtPayloadWithId } from '@/types/app.types';
-import { UserDocument, UserRequestBodyTypes } from '@/types/user.types';
+import { JwtPayloadWithId, RequestWithBody } from '@/types/app.types';
+import { UserRequestBodyTypes } from '@/types/user.types';
 import { ApiError } from '@utils/api.error';
 import { ApiResponse } from '@utils/api.response';
-import { asyncTryCatchHandler } from '@utils/async.handler';
+import { asyncControllerHandler } from '@utils/async.handler';
 import { generateAccessTokenRefreshToken } from '@utils/generate-tokens';
 
-const registerUser = asyncTryCatchHandler(
-  async (req: Request<object, object, UserRequestBodyTypes>, res: Response) => {
-    const { username, fullname, email, password } = req.body;
+const registerUser = asyncControllerHandler(
+  async (req: RequestWithBody<UserRequestBodyTypes>, res: Response) => {
+    const { username, email, password } = req.body;
 
-    if ([username, fullname, email, password].some(value => value?.trim() === '')) {
+    if ([username, email, password].some(value => value?.trim() === '')) {
       throw new ApiError({
         statusCode: StatusCode.BAD_REQUEST,
         message: Message.ALL_FIELDS_REQUIRED,
@@ -39,11 +38,12 @@ const registerUser = asyncTryCatchHandler(
 
     const user = await User.create({
       username,
-      fullname,
       email,
       password,
     });
-    const createdUser = await User.findById(user._id).select('-password -refreshToken');
+    const createdUser = await User.findById(user._id).select(
+      '-password -refreshToken -passkeyCredentials'
+    );
 
     if (!createdUser) {
       throw new ApiError({
@@ -64,11 +64,11 @@ const registerUser = asyncTryCatchHandler(
   }
 );
 
-const loginUser = asyncTryCatchHandler(
-  async (req: Request<object, object, UserRequestBodyTypes>, res: Response) => {
-    const { username, email, password } = req.body;
+const loginUser = asyncControllerHandler(
+  async (req: RequestWithBody<UserRequestBodyTypes>, res: Response) => {
+    const { username, password } = req.body;
 
-    if (!username && !email) {
+    if (!username) {
       throw new ApiError({
         statusCode: StatusCode.BAD_REQUEST,
         message: Message.USERNAME_EMAIL_REQUIRED,
@@ -77,7 +77,7 @@ const loginUser = asyncTryCatchHandler(
     }
 
     const user = await User.findOne({
-      $or: [{ username }, { email }],
+      $or: [{ username }, { email: username }],
     });
 
     if (!user) {
@@ -100,12 +100,14 @@ const loginUser = asyncTryCatchHandler(
 
     const { accessToken, refreshToken } = await generateAccessTokenRefreshToken(user._id);
 
-    const loggedInUser = await User.findById(user._id).select('-password -refreshToken');
+    const loggedInUser = await User.findById(user._id).select(
+      '-password -refreshToken -passkeyCredentials'
+    );
 
     if (!loggedInUser) {
       throw new ApiError({
         statusCode: StatusCode.INTERNAL_SERVER_ERROR,
-        message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
+        message: Message.SOMETHING_WENT_WRONG_TRY_AGAIN,
         status: false,
       });
     }
@@ -118,15 +120,19 @@ const loginUser = asyncTryCatchHandler(
         new ApiResponse({
           statusCode: StatusCode.OK,
           message: Message.USER_LOGGED_IN,
-          data: { loggedInUser, accessToken, refreshToken },
+          data: loggedInUser,
           status: true,
         })
       );
   }
 );
 
-const refreshAccessToken = asyncTryCatchHandler(
-  async (req: Request<object, object, UserDocument>, res: Response) => {
+interface RefreshTokenBodyTypes {
+  refreshToken: string;
+}
+
+const refreshAccessToken = asyncControllerHandler(
+  async (req: RequestWithBody<RefreshTokenBodyTypes>, res: Response) => {
     const token = String(req.cookies['accessToken'] || req.body.refreshToken);
 
     if (!token) {
@@ -184,8 +190,16 @@ const refreshAccessToken = asyncTryCatchHandler(
   }
 );
 
-const logoutUser = asyncTryCatchHandler(async (req: Auth.UserRequest, res: Response) => {
+const logoutUser = asyncControllerHandler(async (req: RequestWithBody, res: Response) => {
   const userId = req?.user?._id;
+
+  if (!userId) {
+    throw new ApiError({
+      statusCode: StatusCode.UNAUTHORIZED,
+      message: Message.UNAUTHORIZED_REQUEST,
+      status: false,
+    });
+  }
 
   await User.findByIdAndUpdate(
     userId,
@@ -212,10 +226,10 @@ const logoutUser = asyncTryCatchHandler(async (req: Auth.UserRequest, res: Respo
     );
 });
 
-const updateUserAvatar = asyncTryCatchHandler(async (req: Auth.UserRequest, res: Response) => {
+const updateUserAvatar = asyncControllerHandler(async (req: RequestWithBody, res: Response) => {
   const userId = req?.user?._id;
 
-  const user = await User.findById(userId).select('-password -refreshToken');
+  const user = await User.findById(userId).select('-password -refreshToken -passkeyCredentials');
 
   if (!user) {
     const ErrorResponse = {
@@ -236,4 +250,35 @@ const updateUserAvatar = asyncTryCatchHandler(async (req: Auth.UserRequest, res:
   return res.status(StatusCode.CREATED).json(new ApiResponse(jsonResponse));
 });
 
-export { registerUser, updateUserAvatar, loginUser, logoutUser, refreshAccessToken };
+// eslint-disable-next-line @typescript-eslint/require-await
+const getUserDetails = asyncControllerHandler(async (req: RequestWithBody, res: Response) => {
+  const user = req.user;
+
+  if (!user) {
+    throw new ApiError({
+      statusCode: StatusCode.NOT_FOUND,
+      message: Message.USER_NOT_FOUND,
+      status: false,
+    });
+  }
+
+  const { username, email } = user;
+
+  return res.status(StatusCode.OK).json(
+    new ApiResponse({
+      statusCode: StatusCode.OK,
+      message: Message.NONE,
+      data: { username, email, displayName: user?.passkeyCredentials?.displayName ?? '' },
+      status: true,
+    })
+  );
+});
+
+export {
+  registerUser,
+  updateUserAvatar,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  getUserDetails,
+};

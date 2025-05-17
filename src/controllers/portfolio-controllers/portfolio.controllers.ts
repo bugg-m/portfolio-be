@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import axios from 'axios';
 import { Request, Response } from 'express';
 
+import { RequestWithBody } from '@/types/app.types';
 import { AdminRequestBodyTypes } from '@/types/portfolio-types/admin.types';
 import { SendMessageRequestBodyTypes } from '@/types/portfolio-types/contact.types';
 import { Message } from '@constants/message-constants/message.constants';
@@ -10,12 +10,12 @@ import { Admin } from '@models/portfolio-models/admin.model';
 import { SendMessage } from '@models/portfolio-models/send.message.models';
 import { ApiError } from '@utils/api.error';
 import { ApiResponse } from '@utils/api.response';
-import { asyncTryCatchHandler } from '@utils/async.handler';
+import { asyncControllerHandler } from '@utils/async.handler';
 import { deleteFileOnCloudinary, uploadFileOnCloudinary } from '@utils/cloudinary';
-import { sendWelcomeEmail } from '@utils/node-mailer';
+import { EmailService, EmailSubject, EmailTemplate } from '@utils/node-mailer';
 
-const registerAdmin = asyncTryCatchHandler(
-  async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
+const registerAdmin = asyncControllerHandler(
+  async (req: RequestWithBody<AdminRequestBodyTypes>, res: Response) => {
     const { username, fullname, email, password, secretToken } = req.body;
 
     if (
@@ -59,7 +59,7 @@ const registerAdmin = asyncTryCatchHandler(
       });
     }
 
-    res.status(StatusCode.CREATED).json(
+    return res.status(StatusCode.CREATED).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.USER_CREATED_SUCCESSFULLY,
@@ -70,8 +70,8 @@ const registerAdmin = asyncTryCatchHandler(
   }
 );
 
-const loginAdmin = asyncTryCatchHandler(
-  async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
+const loginAdmin = asyncControllerHandler(
+  async (req: RequestWithBody<AdminRequestBodyTypes>, res: Response) => {
     const { username, email, password } = req.body;
 
     if (!username && !email) {
@@ -114,7 +114,7 @@ const loginAdmin = asyncTryCatchHandler(
       });
     }
 
-    res.status(StatusCode.OK).json(
+    return res.status(StatusCode.OK).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.USER_LOGGED_IN,
@@ -125,7 +125,7 @@ const loginAdmin = asyncTryCatchHandler(
   }
 );
 
-const updateAdminAvatar = asyncTryCatchHandler(async (req: Request, res: Response) => {
+const updateAdminAvatar = asyncControllerHandler(async (req: Request, res: Response) => {
   const avatarLocalPath = req.file?.path;
   if (!avatarLocalPath) {
     throw new ApiError({
@@ -144,7 +144,7 @@ const updateAdminAvatar = asyncTryCatchHandler(async (req: Request, res: Respons
     });
   }
 
-  res.status(StatusCode.CREATED).json(
+  return res.status(StatusCode.CREATED).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.USER_CREATED_SUCCESSFULLY,
@@ -154,13 +154,16 @@ const updateAdminAvatar = asyncTryCatchHandler(async (req: Request, res: Respons
   );
 });
 
-const getGithubProjects = asyncTryCatchHandler(async (_: Request, res: Response) => {
-  const { status, data } = await axios.get(process.env.GITHUB_REPOS_URL ?? '', {
-    headers: {
-      Authorization: process.env.GITHUB_ACCESS_TOKEN,
-      'Admin-Agent': process.env.APP_NAME,
-    },
-  });
+const getGithubProjects = asyncControllerHandler(async (_: Request, res: Response) => {
+  const { status, data } = await axios.get<{ status: boolean; data: object }>(
+    process.env.GITHUB_REPOS_URL ?? '',
+    {
+      headers: {
+        Authorization: process.env.GITHUB_ACCESS_TOKEN,
+        'Admin-Agent': process.env.APP_NAME,
+      },
+    }
+  );
 
   if (status !== 200 && data === undefined) {
     throw new ApiError({
@@ -170,7 +173,7 @@ const getGithubProjects = asyncTryCatchHandler(async (_: Request, res: Response)
     });
   }
 
-  res.status(StatusCode.OK).json(
+  return res.status(StatusCode.OK).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.REPOS_FETCHED,
@@ -180,9 +183,10 @@ const getGithubProjects = asyncTryCatchHandler(async (_: Request, res: Response)
   );
 });
 
-const sendMessage = asyncTryCatchHandler(
-  async (req: Request<object, object, SendMessageRequestBodyTypes>, res: Response) => {
+const sendMessage = asyncControllerHandler(
+  async (req: RequestWithBody<SendMessageRequestBodyTypes>, res: Response) => {
     const { name, email, message } = req.body;
+    const emailService = new EmailService();
 
     if ([name, email, message].some(value => value?.trim() === '')) {
       throw new ApiError({
@@ -216,9 +220,21 @@ const sendMessage = asyncTryCatchHandler(
       await sentMessages.save();
     }
 
-    await sendWelcomeEmail({ recipientEmail: email, recipientName: name });
+    await emailService.sendEmail({
+      recipientEmail: process.env.NODE_MAILER_EMAIL ?? 'echobuggm@gmail.com',
+      subject: EmailSubject.NEW_MESSAGE,
+      template: EmailTemplate.NEW_MESSAGE_FROM,
+      templateData: { recipientName: name, recipientEmail: email, recipientMessage: message },
+    });
 
-    res.status(StatusCode.OK).json(
+    await emailService.sendEmail({
+      recipientEmail: email,
+      subject: EmailSubject.REACHING_OUT,
+      template: EmailTemplate.WELCOME,
+      templateData: { recipientName: name },
+    });
+
+    return res.status(StatusCode.OK).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.MESSAGE_SEND,
@@ -228,8 +244,8 @@ const sendMessage = asyncTryCatchHandler(
   }
 );
 
-const uploadCV = asyncTryCatchHandler(
-  async (req: Request<object, object, AdminRequestBodyTypes>, res: Response) => {
+const uploadCV = asyncControllerHandler(
+  async (req: RequestWithBody<AdminRequestBodyTypes>, res: Response) => {
     const cvLocalPath = req?.file?.path;
     const { secretToken } = req.body;
 
@@ -299,7 +315,7 @@ const uploadCV = asyncTryCatchHandler(
       });
     }
 
-    res.status(StatusCode.OK).json(
+    return res.status(StatusCode.OK).json(
       new ApiResponse({
         statusCode: StatusCode.OK,
         message: Message.CV_UPLOADED,
@@ -309,7 +325,7 @@ const uploadCV = asyncTryCatchHandler(
   }
 );
 
-const downloadCV = asyncTryCatchHandler(async (_: Request, res: Response) => {
+const downloadCV = asyncControllerHandler(async (_: Request, res: Response) => {
   const admin = await Admin.findOne();
 
   if (!admin) {
@@ -330,7 +346,7 @@ const downloadCV = asyncTryCatchHandler(async (_: Request, res: Response) => {
   admin.cvDownloadCount += 1;
   await admin.save();
 
-  res.status(StatusCode.OK).json(
+  return res.status(StatusCode.OK).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.CV_DOWNLOADED,

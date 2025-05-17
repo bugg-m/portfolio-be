@@ -4,6 +4,8 @@ import mongoose, { Schema } from 'mongoose';
 
 import { UserDocument, UserModel } from '@/types/user.types';
 
+import { PasskeysSchema } from './passkeys.model';
+
 // Define the schema for the user
 const userSchema = new Schema<UserDocument, UserModel>(
   {
@@ -14,12 +16,6 @@ const userSchema = new Schema<UserDocument, UserModel>(
       trim: true,
       lowercase: true,
       index: true,
-    },
-    fullname: {
-      type: String,
-      required: true,
-      trim: true,
-      lowercase: true,
     },
     email: {
       type: String,
@@ -36,6 +32,8 @@ const userSchema = new Schema<UserDocument, UserModel>(
       required: true,
       trim: true,
     },
+    passkeyCredentials: PasskeysSchema,
+    createdAt: { type: Date, default: Date.now, index: { expires: '30d' } },
   },
   {
     timestamps: true,
