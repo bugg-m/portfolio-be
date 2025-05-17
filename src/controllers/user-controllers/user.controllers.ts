@@ -107,7 +107,7 @@ const loginUser = asyncControllerHandler(
     if (!loggedInUser) {
       throw new ApiError({
         statusCode: StatusCode.INTERNAL_SERVER_ERROR,
-        message: Message.SOMETHING_WENT_WRONG_REGISTERING_USER,
+        message: Message.SOMETHING_WENT_WRONG_TRY_AGAIN,
         status: false,
       });
     }
@@ -262,17 +262,13 @@ const getUserDetails = asyncControllerHandler(async (req: RequestWithBody, res: 
     });
   }
 
-  const {
-    username,
-    email,
-    passkeyCredentials: { displayName },
-  } = user;
+  const { username, email } = user;
 
   return res.status(StatusCode.OK).json(
     new ApiResponse({
       statusCode: StatusCode.OK,
       message: Message.NONE,
-      data: { username, email, displayName },
+      data: { username, email, displayName: user?.passkeyCredentials?.displayName ?? '' },
       status: true,
     })
   );

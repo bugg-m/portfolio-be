@@ -18,7 +18,7 @@ const verifyJWT = asyncMiddlewareHandler(
     if (!token) {
       throw new ApiError({
         statusCode: StatusCode.UNAUTHORIZED,
-        message: Message.INVALID_TOKEN,
+        message: Message.UNAUTHORIZED_REQUEST,
         status: false,
       });
     }

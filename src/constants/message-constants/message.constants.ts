@@ -4,7 +4,7 @@ const Message = {
   AVATAR_NOT_PROVIDED: 'Avatar file not provided',
 
   CHALLENGE_CREATED: 'Challenge created!',
-  COULD_NOT_VERIFY: 'Could not verify!',
+  COULD_NOT_VERIFY_CHALLENGE: 'Could not verify challenge!',
   CV_NOT_PROVIDED: 'CV not provided by user',
   CV_NOT_FOUND: 'CV not found',
   CV_NOT_UPLOADED: 'CV not uploaded',
@@ -24,6 +24,8 @@ const Message = {
   NONE: '',
   NOT_FOUND: 'Not found!',
 
+  PASSKEY_CREATED: 'Passkey created!',
+
   REFRESH_TOKEN_EXPIRED: 'Refresh token expired',
   REPOS_FETCHED: 'Github repos fetched successfully',
   REPOS_NOT_FOUND: 'Github github repos not found!',
@@ -34,7 +36,7 @@ const Message = {
   SOMETHING_WENT_WRONG_TRY_AGAIN: 'Something went wrong! Please try again.',
   SOMETHING_WENT_WRONG_UPLOADING_AVATAR: 'Something went wrong while uploading avatar',
 
-  UNAUTHORIZED_REQUEST: 'User is not authorized',
+  UNAUTHORIZED_REQUEST: 'Unauthorized request',
   USER_NOT_FOUND: 'User not found',
   USER_LOGGED_IN: 'User logged in',
   USER_ALREADY_EXISTS: 'User already exists',

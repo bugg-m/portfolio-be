@@ -4,15 +4,52 @@ import { PasskeysDocument } from '@/types/user.types';
 
 const PasskeysSchema = new mongoose.Schema<PasskeysDocument>(
   {
-    challenge: {
+    registerChallenge: {
       type: String,
     },
-    publicKey: {
+    loginChallenge: {
       type: String,
     },
-    counter: {
-      type: Number,
+
+    registrationInfo: {
+      fmt: { type: String },
+      aaguid: { type: String },
+      credential: {
+        id: {
+          type: String,
+        },
+        publicKey: {
+          type: String,
+        },
+        counter: {
+          type: Number,
+        },
+        transports: {
+          type: [String],
+        },
+      },
+      credentialType: {
+        type: String,
+      },
+      attestationObject: { type: String },
+      userVerified: { type: Boolean },
+      credentialDeviceType: {
+        type: String,
+      },
+      credentialBackedUp: {
+        type: Boolean,
+      },
+      origin: {
+        type: String,
+      },
+      rpID: {
+        type: String,
+      },
+      authenticatorExtensionResults: {
+        type: String,
+      },
     },
+
     displayName: {
       type: String,
     },

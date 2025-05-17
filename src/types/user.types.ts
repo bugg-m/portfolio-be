@@ -1,3 +1,9 @@
+import {
+  AttestationFormat,
+  CredentialDeviceType,
+  type WebAuthnCredential,
+} from '@simplewebauthn/server';
+import { AuthenticationExtensionsAuthenticatorOutputs } from '@simplewebauthn/server/script/helpers/decodeAuthenticatorExtensions';
 import { Model, Document } from 'mongoose';
 
 export interface UserRequestBodyTypes {
@@ -24,11 +30,25 @@ export interface UserDocument extends Document {
 }
 
 export interface PasskeysDocument {
-  challenge: string;
-  publicKey: Uint8Array | string;
-  counter: number;
+  registerChallenge: string;
+  loginChallenge: string;
+  registrationInfo: RegistrationInfoDocument;
   createdAt: Date;
   displayName: string;
+}
+
+export interface RegistrationInfoDocument {
+  fmt: AttestationFormat;
+  aaguid: string;
+  credential: WebAuthnCredential;
+  credentialType: 'public-key';
+  attestationObject: Uint8Array;
+  userVerified: boolean;
+  credentialDeviceType: CredentialDeviceType;
+  credentialBackedUp: boolean;
+  origin: string;
+  rpID?: string;
+  authenticatorExtensionResults?: AuthenticationExtensionsAuthenticatorOutputs;
 }
 
 export interface UserModel extends Model<UserDocument> {}
