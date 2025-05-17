@@ -1,12 +1,12 @@
 import { Response } from 'express';
 import { verify } from 'jsonwebtoken';
 
-import { options } from '@/app.constants';
 import { Message } from '@/constants/message-constants/message.constants';
 import { StatusCode } from '@/constants/status-code-constants/statusCode.constants';
 import { User } from '@/models/user-models/user.model';
 import { JwtPayloadWithId, RequestWithBody } from '@/types/app.types';
 import { UserRequestBodyTypes } from '@/types/user.types';
+import { options } from '@constants/app.constants';
 import { ApiError } from '@utils/api.error';
 import { ApiResponse } from '@utils/api.response';
 import { asyncControllerHandler } from '@utils/async.handler';

@@ -15,7 +15,7 @@ import { ErrorHandler } from '@middlewares/error.handler.middleware';
 import { PortfolioRouter } from '@routes/portfolio-routes/portfolio.routes';
 import { UserRouter } from '@routes/user-routes/user.routes';
 
-import { PORTFOLIO_API_ROUTE, USER_API_ROUTE } from './app.constants';
+import { PORTFOLIO_API_ROUTE, USER_API_ROUTE } from './constants/app.constants';
 
 // if (!globalThis.crypto) {
 //   globalThis.crypto = crypto;
