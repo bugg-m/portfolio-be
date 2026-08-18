@@ -1,26 +1,21 @@
 {
   "compilerOptions": {
-    /* Basic Options */
     "target": "es2020",
-    "module": "commonjs",
+    "module": "node16",
     "lib": ["es2020"],
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true,
 
-    /* Module Resolution Options */
-    "moduleResolution": "node",
-    "baseUrl": ".",
+    "moduleResolution": "node16",
     "paths": {
-      "@*": ["src/*"]
+      "@*": ["./src/*"]
     },
     "esModuleInterop": true,
     "resolveJsonModule": true,
 
-    /* Source Map Options */
     "sourceMap": true,
 
-    /* Additional Checks */
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -33,11 +28,9 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
 
-    /* Advanced Options */
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
 
-    /* Experimental Options */
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
