@@ -116,7 +116,7 @@ const verifyPasskeyRegistrationResponse = asyncControllerHandler(
 
     user.passkeyCredentials = {
       ...user.passkeyCredentials,
-      registrationInfo: verificationResponse.registrationInfo ?? ({} as RegistrationInfoDocument),
+      registrationInfo: (verificationResponse.registrationInfo ?? {}) as RegistrationInfoDocument,
     };
 
     await user.save();

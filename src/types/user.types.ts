@@ -1,9 +1,9 @@
 import {
   AttestationFormat,
   CredentialDeviceType,
+  type AuthenticationExtensionsClientOutputs,
   type WebAuthnCredential,
 } from '@simplewebauthn/server';
-import { AuthenticationExtensionsAuthenticatorOutputs } from '@simplewebauthn/server/script/helpers/decodeAuthenticatorExtensions';
 import { Model, Document } from 'mongoose';
 
 export interface UserRequestBodyTypes {
@@ -48,7 +48,7 @@ export interface RegistrationInfoDocument {
   credentialBackedUp: boolean;
   origin: string;
   rpID?: string;
-  authenticatorExtensionResults?: AuthenticationExtensionsAuthenticatorOutputs;
+  authenticatorExtensionResults?: AuthenticationExtensionsClientOutputs;
 }
 
 export interface UserModel extends Model<UserDocument> {}

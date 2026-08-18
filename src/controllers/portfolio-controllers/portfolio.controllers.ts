@@ -220,18 +220,29 @@ const sendMessage = asyncControllerHandler(
       await sentMessages.save();
     }
 
-    await emailService.sendEmail({
-      recipientEmail: process.env.NODE_MAILER_EMAIL ?? 'echobuggm@gmail.com',
-      subject: EmailSubject.NEW_MESSAGE,
-      template: EmailTemplate.NEW_MESSAGE_FROM,
-      templateData: { recipientName: name, recipientEmail: email, recipientMessage: message },
-    });
+    const results = await Promise.allSettled([
+      emailService.sendEmail({
+        recipientEmail: process.env.NODE_MAILER_EMAIL ?? 'echobuggm@gmail.com',
+        subject: EmailSubject.NEW_MESSAGE,
+        template: EmailTemplate.NEW_MESSAGE_FROM,
+        templateData: { recipientName: name, recipientEmail: email, recipientMessage: message },
+      }),
+      emailService.sendEmail({
+        recipientEmail: email,
+        subject: EmailSubject.REACHING_OUT,
+        template: EmailTemplate.WELCOME,
+        templateData: { recipientName: name },
+      }),
+    ]);
 
-    await emailService.sendEmail({
-      recipientEmail: email,
-      subject: EmailSubject.REACHING_OUT,
-      template: EmailTemplate.WELCOME,
-      templateData: { recipientName: name },
+    results.forEach((result, i) => {
+      if (result.status === 'rejected' && i === 0) {
+        throw new ApiError({
+          statusCode: StatusCode.INTERNAL_SERVER_ERROR,
+          message: Message.MESSAGE_NOT_SEND,
+          status: false,
+        });
+      }
     });
 
     return res.status(StatusCode.OK).json(

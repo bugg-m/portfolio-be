@@ -20,6 +20,7 @@ const Message = {
   INVALID_TOKEN: 'Invalid token',
 
   MESSAGE_SEND: 'Message send',
+  MESSAGE_NOT_SEND: 'Failed to send message! Please try again later.',
 
   NONE: '',
   NOT_FOUND: 'Not found!',

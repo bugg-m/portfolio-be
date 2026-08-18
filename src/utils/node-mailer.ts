@@ -1,4 +1,8 @@
-import { createTransport, TransportOptions, SentMessageInfo } from 'nodemailer';
+import { Resend } from 'resend';
+
+import { Message } from '@constants/message-constants/message.constants';
+
+import { ApiError } from './api.error';
 
 interface EmailConfig {
   recipientEmail: string;
@@ -62,43 +66,48 @@ type EmailTemplateData =
   | NewMessageTemplateData;
 
 class EmailService {
-  private transporter;
+  private resend: Resend;
   private portfolioUrl: string;
   private myName: string;
-  private myEmail: string;
 
   constructor() {
     this.portfolioUrl = process.env.FRONTEND_URL ?? '';
     this.myName = `${process.env.MY_FIRST_NAME} ${process.env.MY_LAST_NAME}`;
-    this.myEmail = process.env.NODE_MAILER_EMAIL ?? 'echobuggm@gmail.com';
 
-    this.transporter = createTransport({
-      host: `${process.env.NODE_MAILER_TRANSPORT_HOST}`,
-      port: Number(process.env.NODE_MAILER_TRANSPORT_PORT),
-      secure: true,
-      auth: {
-        user: this.myEmail,
-        pass: process.env.NODE_MAILER_EMAIL_PASSWORD ?? '',
-      },
-    } as TransportOptions);
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is not set');
+    }
+    if (!process.env.RESEND_FROM_EMAIL) {
+      throw new Error('RESEND_FROM_EMAIL is not set');
+    }
+
+    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
-  async sendEmail(config: EmailConfig): Promise<SentMessageInfo> {
+  async sendEmail(config: EmailConfig): Promise<{ id: string }> {
     const { recipientEmail, subject, template, templateData, from } = config;
 
     const { htmlContent, textContent } = this.generateEmailContent(template, {
       ...templateData,
     });
 
-    const info = await this.transporter.sendMail({
-      from: from || `"${this.myName}" <${this.myEmail}>`,
+    const { data, error } = await this.resend.emails.send({
+      from: from || `${this.myName} <${process.env.RESEND_FROM_EMAIL}>`,
       to: recipientEmail,
       subject: subject,
       text: textContent,
       html: htmlContent,
     });
 
-    return info;
+    if (error) {
+      throw new ApiError({
+        statusCode: 500,
+        message: Message.MESSAGE_NOT_SEND,
+        status: false,
+      });
+    }
+
+    return data as { id: string };
   }
 
   private generateEmailContent(
@@ -161,6 +170,15 @@ class EmailService {
       const value = data[key];
       return value !== undefined ? String(value) : match;
     });
+  }
+
+  private escapeHtml(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private getWelcomeEmailContent(recipientName?: string): {
@@ -343,11 +361,11 @@ class EmailService {
             <p>
               You have received a new message via your portfolio website. Below are the details:
             </p>
-            <div class="sender-info">
-              <p><strong>Sender Name:</strong> ${data?.recipientName}</p>
-              <p><strong>Sender Email:</strong> ${data?.recipientEmail}</p>
-              <p><strong>Message:</strong><br>${data?.recipientMessage}</p>
-            </div>
+          <div class="sender-info">
+            <p><strong>Sender Name:</strong> ${this.escapeHtml(data?.recipientName ?? '')}</p>
+            <p><strong>Sender Email:</strong> ${this.escapeHtml(data?.recipientEmail ?? '')}</p>
+            <p><strong>Message:</strong><br>${this.escapeHtml(data?.recipientMessage ?? '')}</p>
+          </div>
             <p>
               Please review this message and respond at your earliest convenience.
             </p>
